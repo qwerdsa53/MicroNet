@@ -1,0 +1,6 @@
+server:
+  port: 8081
+debug: true
+spring:
+  application:
+    name: test
