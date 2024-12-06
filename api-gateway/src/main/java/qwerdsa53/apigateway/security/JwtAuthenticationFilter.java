@@ -2,7 +2,9 @@ package qwerdsa53.apigateway.security;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -27,59 +29,49 @@ public class JwtAuthenticationFilter implements WebFilter {
     private final BlacklistService blacklistService;
 
     @Override
-    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        // Извлекаем токен из заголовка запроса
+    public @NotNull Mono<Void> filter(@NotNull ServerWebExchange exchange, @NotNull WebFilterChain chain) {
         String token = extractTokenFromRequest(exchange.getRequest());
 
-        // Если токен не пустой и прошел валидацию
-        if (token != null && jwtTokenProvider.validateToken(token)) {
-            // Проверяем, не находится ли токен в черном списке
-            if (!blacklistService.isTokenBlacklisted(token)) {
-                // Извлекаем данные из токена
-                Long userId = jwtTokenProvider.getUserIdFromToken(token);
-                String username = jwtTokenProvider.getUsernameFromToken(token);
-                List<String> roles = jwtTokenProvider.getRolesFromToken(token);
-                List<GrantedAuthority> authorities = roles.stream()
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
-
-                // Создаем объект пользовательских данных
-                CustomUserDetails userDetails = new CustomUserDetails(
-                        userId, username, null, authorities
-                );
-
-                // Создаем аутентификацию
-                Authentication authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, authorities
-                );
-
-                // Настроим контекст безопасности
-                return ReactiveSecurityContextHolder.getContext()
-                        .flatMap(securityContext -> {
-                            // Устанавливаем аутентификацию в контекст
-                            securityContext.setAuthentication(authentication);
-                            return chain.filter(exchange);  // продолжаем цепочку фильтров
-                        })
-                        .switchIfEmpty(chain.filter(exchange));  // если контекст пуст, продолжаем цепочку
-            } else {
-                log.warn("Token is blacklisted: {}", token);
+        if (token != null) {
+            if (!jwtTokenProvider.validateToken(token)) {
+                log.warn("Invalid JWT Token.");
+                exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                return exchange.getResponse().setComplete();
             }
+
+            if (blacklistService.isTokenBlacklisted(token)) {
+                log.warn("Token is blacklisted: {}", token);
+                exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
+                return exchange.getResponse().setComplete();
+            }
+
+            Long userId = jwtTokenProvider.getUserIdFromToken(token);
+            String username = jwtTokenProvider.getUsernameFromToken(token);
+            List<String> roles = jwtTokenProvider.getRolesFromToken(token);
+
+            List<GrantedAuthority> authorities = roles.stream()
+                    .map(SimpleGrantedAuthority::new)
+                    .collect(Collectors.toList());
+
+            Authentication authentication = new UsernamePasswordAuthenticationToken(
+                    new CustomUserDetails(userId, username, null, authorities),
+                    null,
+                    authorities
+            );
+
+            return chain.filter(exchange)
+                    .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication));
         }
 
-        // Если токен не прошел валидацию или он в черном списке, пропускаем запрос
         return chain.filter(exchange);
     }
 
-    /**
-     * Извлекает токен из заголовка Authorization.
-     * @param request запрос
-     * @return токен или null, если токен не найден
-     */
     private String extractTokenFromRequest(ServerHttpRequest request) {
         String authorizationHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            return authorizationHeader.substring(7);  // извлекаем токен после "Bearer "
+            return authorizationHeader.substring(7);
         }
         return null;
     }
 }
+
