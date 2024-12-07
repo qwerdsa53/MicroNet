@@ -1,1 +1,152 @@
+name: Multi-Service CI/CD
 
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "api-gateway/**"
+      - "user-service/**"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "api-gateway/**"
+      - "user-service/**"
+
+jobs:
+  api-gateway:
+    if: contains(github.event.head_commit.message, 'api-gateway') || github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:13
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: cms
+
+      redis:
+        image: redis:6
+        ports:
+          - 6379:6379
+        options: --health-cmd="redis-cli ping || exit 1"
+
+    env:
+      P_PASSWORD: 1423
+      P_URL: jdbc:postgresql://localhost:5432/cms
+      P_USERNAME: postgres
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      SECRET: kzM6i0bTVHVswcm2EWgNwGgyaMVoufz1DhSkWimmjhGSlYeoIr+51jZm6govxPRf80ZSeJ7ILE0aYjpzm9OQgw==kzM6i0bTVHVswcm2EWgNwGgyaMVoufz1DhSkWimmjhGSlYeoIr+51jZm6govxPRf80ZSeJ7ILE0aYjpzm9OQgw==
+      YANDEX_EMAIL: trackMyFinance@yandex.ru
+      YANDEX_PASSWORD: ymifeklivoirpdzj
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get install -y postgresql-client
+
+      - name: Check Postgres connection
+        run: |
+          psql -h localhost -U postgres -d cms -c "SELECT 1;"
+        env:
+          PGPASSWORD: 1423
+
+      - name: Build api-gateway
+        working-directory: ./api-gateway
+        run: mvn clean install
+
+      - name: Test api-gateway
+        working-directory: ./api-gateway
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/cms
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: 1423
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+        run: mvn test
+
+  user-service:
+    if: contains(github.event.head_commit.message, 'user-service') || github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:13
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: 1423
+          POSTGRES_DB: CMS
+
+      redis:
+        image: redis:6
+        ports:
+          - 6379:6379
+        options: --health-cmd="redis-cli ping || exit 1"
+
+    env:
+      P_PASSWORD: 1423
+      P_URL: jdbc:postgresql://localhost:5432/CMS
+      P_USERNAME: postgres
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      SECRET: kzM6i0bTVHVswcm2EWgNwGgyaMVoufz1DhSkWimmjhGSlYeoIr+51jZm6govxPRf80ZSeJ7ILE0aYjpzm9OQgw==kzM6i0bTVHVswcm2EWgNwGgyaMVoufz1DhSkWimmjhGSlYeoIr+51jZm6govxPRf80ZSeJ7ILE0aYjpzm9OQgw==
+      YANDEX_EMAIL: trackMyFinance@yandex.ru
+      YANDEX_PASSWORD: ymifeklivoirpdzj
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get install -y postgresql-client
+
+      - name: Check Postgres connection
+        run: |
+          psql -h localhost -U postgres -d userdb -c "SELECT 1;"
+        env:
+          PGPASSWORD: password
+
+      - name: Build user-service
+        working-directory: ./user-service
+        run: mvn clean install
+
+      - name: Test user-service
+        working-directory: ./user-service
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/CMS
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: 1423
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+        run: mvn test
