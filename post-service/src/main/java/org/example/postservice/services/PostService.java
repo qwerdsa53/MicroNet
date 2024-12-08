@@ -21,8 +21,17 @@ public class PostService {
     private final PostRepo postRepo;
     private final TagRepository tagRepository;
 
-    public List<Post> getAllByUserId(Long userId) {
-        return postRepo.getAllByUserId(userId);
+    public List<PostDto> getAllByUserId(Long userId) {
+        return postRepo.getAllByUserId(userId).stream()
+                .map(post -> PostDto.builder()
+                            .id(post.getId())
+                            .userId(post.getUser().getId())
+                            .title(post.getTitle())
+                            .text(post.getText())
+                            .tags(post.getTags().stream().map(Tag::getName).toList())
+                            .createdAt(post.getCreatedAt())
+                            .build())
+                .toList();
     }
 
     public void addPostByUserId(PostDto postDto, Long userId) {
@@ -30,10 +39,10 @@ public class PostService {
         user.setId(userId);
 
         List<Tag> tags = postDto.getTags().stream()
-                .map(tagDto -> tagRepository.findByName(tagDto.getName())
+                .map(tagDto -> tagRepository.findByName(tagDto)
                         .orElseGet(() -> {
                             Tag newTag = new Tag();
-                            newTag.setName(tagDto.getName());
+                            newTag.setName(tagDto);
                             return tagRepository.save(newTag);
                         }))
                 .toList();
@@ -61,8 +70,8 @@ public class PostService {
 
         if (postDto.getTags() != null) {
             List<Tag> updatedTags = postDto.getTags().stream()
-                    .map(tagName -> tagRepository.findByName(tagName.getName())
-                            .orElseGet(() -> new Tag(null, tagName.getName(), null)))
+                    .map(tagName -> tagRepository.findByName(tagName)
+                            .orElseGet(() -> new Tag(null, tagName, null)))
                     .toList();
 
             post.getTags().clear();

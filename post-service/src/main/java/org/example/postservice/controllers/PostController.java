@@ -19,7 +19,6 @@ public class PostController {
 
     @GetMapping
     public ResponseEntity<?> getPostsByUserId(@RequestHeader("Authorization") String authorizationHeader) {
-        log.error("Authorization Header: {}", authorizationHeader);
         try {
             String token = extractToken(authorizationHeader);
             Long userId = jwtUtil.extractUserId(token);
@@ -48,7 +47,6 @@ public class PostController {
         if (postDto.getId() == null) {
             throw new IllegalArgumentException("Post ID must not be null");
         }
-        log.error("Post: {}", postDto);
         try {
             String token = extractToken(authorizationHeader);
             Long userId = jwtUtil.extractUserId(token);
