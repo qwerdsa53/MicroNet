@@ -3,8 +3,10 @@ package org.example.postservice.controllers;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.postservice.dto.PostDto;
+import org.example.postservice.models.Post;
 import org.example.postservice.services.PostService;
 import org.example.postservice.utiles.JwtUtil;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -79,6 +81,21 @@ public class PostController {
         } catch (Exception e) {
             log.error("Error deleting post: ", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error deleting post");
+        }
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllPosts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        log.debug("Fetching posts with page: {} and size: {}", page, size);
+        try {
+            Page<PostDto> posts = postService.getAllPosts(page, size);
+            return ResponseEntity.ok(posts);
+        }catch (Exception e){
+            log.error("Error: {}", e.toString());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error");
         }
     }
 

@@ -15,6 +15,8 @@ public class GatewayRoutesConfig {
                         .uri("http://localhost:8082"))
                 .route("posts-server", r -> r.path("/api/v1/posts/**")
                         .uri("http://localhost:8083"))
+                .route("feed-service", r -> r.path("/api/v1/feed/**")
+                        .uri("http://localhost:8084"))
                 .build();
     }
 }

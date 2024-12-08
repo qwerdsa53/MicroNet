@@ -1,6 +1,8 @@
 package org.example.postservice.repo;
 
 import org.example.postservice.models.Post;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -22,4 +24,6 @@ public interface PostRepo extends JpaRepository<Post, Long> {
             @Param("postId") Long postId,
             @Param("userId") Long userId
     );
+
+    Page<Post> findAll(Pageable pageable);
 }

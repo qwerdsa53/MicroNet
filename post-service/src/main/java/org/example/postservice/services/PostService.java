@@ -9,6 +9,10 @@ import org.example.postservice.models.Tag;
 import org.example.postservice.models.User;
 import org.example.postservice.repo.PostRepo;
 import org.example.postservice.repo.TagRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -23,14 +27,7 @@ public class PostService {
 
     public List<PostDto> getAllByUserId(Long userId) {
         return postRepo.getAllByUserId(userId).stream()
-                .map(post -> PostDto.builder()
-                            .id(post.getId())
-                            .userId(post.getUser().getId())
-                            .title(post.getTitle())
-                            .text(post.getText())
-                            .tags(post.getTags().stream().map(Tag::getName).toList())
-                            .createdAt(post.getCreatedAt())
-                            .build())
+                .map(this::convertToDto)
                 .toList();
     }
 
@@ -86,5 +83,23 @@ public class PostService {
     public boolean deletePost(Long postId, Long userId) {
         int deletedRows = postRepo.deleteByIdAndUserId(postId, userId);
         return deletedRows > 0;
+    }
+
+    public Page<PostDto> getAllPosts(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<Post> posts = postRepo.findAll(pageable);
+        return posts.map(this::convertToDto);
+    }
+
+    private PostDto convertToDto(Post post) {
+        return PostDto.builder()
+                .id(post.getId())
+                .userId(post.getUser().getId())
+                .title(post.getTitle())
+                .text(post.getText())
+                .tags(post.getTags() != null ?
+                        post.getTags().stream().map(Tag::getName).toList() : null)
+                .createdAt(post.getCreatedAt())
+                .build();
     }
 }
