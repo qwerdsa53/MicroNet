@@ -4,7 +4,7 @@ package org.example.userservice.controllers;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.userservice.JwtTokenProvider;
-import org.example.userservice.dto.TokenDTO;
+import org.example.userservice.dto.TokenDto;
 import org.example.userservice.model.LoginRequest;
 import org.example.userservice.model.User;
 import org.example.userservice.services.BlacklistService;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("api/v1/auth")
 @Slf4j
 @AllArgsConstructor
 public class AuthController {
@@ -32,7 +32,7 @@ public class AuthController {
 
             String token = jwtTokenProvider.generateToken(user);
 
-            return ResponseEntity.ok(new TokenDTO(token));
+            return ResponseEntity.ok(new TokenDto(token));
         } catch (Exception e) {
             log.error("Authentication failed: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");

@@ -1,14 +1,13 @@
-package qwerdsa53.apigateway;
+package org.example.postservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class ApiGatewayApplicationTests {
+class PostServiceApplicationTests {
 
     @Test
     void contextLoads() {
-
     }
 
 }

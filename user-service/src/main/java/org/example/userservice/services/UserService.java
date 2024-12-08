@@ -3,7 +3,7 @@ package org.example.userservice.services;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.example.userservice.dto.UserRegistrationDTO;
+import org.example.userservice.dto.UserRegistrationDto;
 import org.example.userservice.model.User;
 import org.example.userservice.repo.UserRepository;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -19,7 +19,7 @@ public class UserService {
 
 
     @Async
-    public void registerUser(UserRegistrationDTO userDto) {
+    public void registerUser(UserRegistrationDto userDto) {
         System.out.println("Executing in thread: " + Thread.currentThread().getName());
         User user = User.builder()
                 .username(userDto.getUsername())

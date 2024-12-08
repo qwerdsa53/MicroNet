@@ -2,7 +2,7 @@ package org.example.userservice.controllers;
 
 
 import lombok.AllArgsConstructor;
-import org.example.userservice.dto.UserRegistrationDTO;
+import org.example.userservice.dto.UserRegistrationDto;
 import org.example.userservice.services.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("api/v1/auth")
 @AllArgsConstructor
 public class RegistrationController {
     private final UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestBody UserRegistrationDTO userDto) {
+    public ResponseEntity<String> registerUser(@RequestBody UserRegistrationDto userDto) {
         try {
             userService.registerUser(userDto);
             return ResponseEntity.ok("User registered successfully");

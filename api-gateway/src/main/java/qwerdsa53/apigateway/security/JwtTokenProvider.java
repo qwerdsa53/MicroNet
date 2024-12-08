@@ -15,7 +15,8 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-public class JwtTokenProvider {
+public class
+JwtTokenProvider {
     @Value("${SECRET}")
     private String secret;
     private Key jwtSecret;
