@@ -17,11 +17,9 @@ import java.util.stream.Collectors;
 @Component
 public class
 JwtTokenProvider {
-    @Value("${SECRET}")
+    @Value("${app.secret}")
     private String secret;
     private Key jwtSecret;
-
-    private final int jwtExpirationMs = 86400000; // 1 day
 
     @PostConstruct
     public void init() {

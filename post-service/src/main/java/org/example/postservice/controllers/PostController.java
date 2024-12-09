@@ -2,8 +2,7 @@ package org.example.postservice.controllers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.postservice.dto.PostDto;
-import org.example.postservice.models.Post;
+import org.example.postservice.models.dto.PostDto;
 import org.example.postservice.services.PostService;
 import org.example.postservice.utiles.JwtUtil;
 import org.springframework.data.domain.Page;
@@ -24,7 +23,7 @@ public class PostController {
         try {
             String token = extractToken(authorizationHeader);
             Long userId = jwtUtil.extractUserId(token);
-            return ResponseEntity.status(HttpStatus.OK).body(postService.getAllByUserId(userId));
+            return ResponseEntity.status(HttpStatus.OK).body(postService.getAllPostsByUserId(userId));
         } catch (Exception e) {
             log.error("Error: ", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error");

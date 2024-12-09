@@ -12,11 +12,11 @@ public class GatewayRoutesConfig {
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
                 .route("user-service", r -> r.path("/api/v1/auth/**")
-                        .uri("http://localhost:8082"))
-                .route("posts-server", r -> r.path("/api/v1/posts/**")
-                        .uri("http://localhost:8083"))
+                        .uri("http://user-service:8082"))
+                .route("posts-service", r -> r.path("/api/v1/posts/**")
+                        .uri("http://posts-service:8083"))
                 .route("feed-service", r -> r.path("/api/v1/feed/**")
-                        .uri("http://localhost:8084"))
+                        .uri("http://feed-service:8084"))
                 .build();
     }
 }

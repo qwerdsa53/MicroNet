@@ -4,7 +4,7 @@ package org.example.userservice.controllers;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.userservice.JwtTokenProvider;
-import org.example.userservice.dto.TokenDto;
+import org.example.userservice.model.dto.TokenDto;
 import org.example.userservice.model.LoginRequest;
 import org.example.userservice.model.User;
 import org.example.userservice.services.BlacklistService;

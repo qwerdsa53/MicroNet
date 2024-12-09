@@ -3,12 +3,12 @@ package org.example.postservice.services;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.postservice.dto.PostDto;
+import org.example.postservice.models.dto.PostDto;
 import org.example.postservice.models.Post;
 import org.example.postservice.models.Tag;
 import org.example.postservice.models.User;
 import org.example.postservice.repo.PostRepo;
-import org.example.postservice.repo.TagRepository;
+import org.example.postservice.repo.TagRepo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,9 +23,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepo postRepo;
-    private final TagRepository tagRepository;
+    private final TagRepo tagRepo;
 
-    public List<PostDto> getAllByUserId(Long userId) {
+    public List<PostDto> getAllPostsByUserId(Long userId) {
         return postRepo.getAllByUserId(userId).stream()
                 .map(this::convertToDto)
                 .toList();
@@ -36,11 +36,11 @@ public class PostService {
         user.setId(userId);
 
         List<Tag> tags = postDto.getTags().stream()
-                .map(tagDto -> tagRepository.findByName(tagDto)
+                .map(tagDto -> tagRepo.findByName(tagDto)
                         .orElseGet(() -> {
                             Tag newTag = new Tag();
                             newTag.setName(tagDto);
-                            return tagRepository.save(newTag);
+                            return tagRepo.save(newTag);
                         }))
                 .toList();
 
@@ -67,7 +67,7 @@ public class PostService {
 
         if (postDto.getTags() != null) {
             List<Tag> updatedTags = postDto.getTags().stream()
-                    .map(tagName -> tagRepository.findByName(tagName)
+                    .map(tagName -> tagRepo.findByName(tagName)
                             .orElseGet(() -> new Tag(null, tagName, null)))
                     .toList();
 

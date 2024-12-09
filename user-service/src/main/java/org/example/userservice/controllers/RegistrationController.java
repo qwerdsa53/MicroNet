@@ -2,7 +2,7 @@ package org.example.userservice.controllers;
 
 
 import lombok.AllArgsConstructor;
-import org.example.userservice.dto.UserRegistrationDto;
+import org.example.userservice.model.dto.UserRegistrationDto;
 import org.example.userservice.services.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

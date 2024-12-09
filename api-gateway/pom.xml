@@ -29,7 +29,13 @@
     <properties>
         <java.version>17</java.version>
         <spring-cloud.version>2024.0.0-RC1</spring-cloud.version>
+        <P_PASSWORD>${env.P_PASSWORD}</P_PASSWORD>
+        <P_URL>${env.P_URL}</P_URL>
+        <P_USERNAME>${env.P_USERNAME}</P_USERNAME>
+        <REDIS_HOST>${env.REDIS_HOST}</REDIS_HOST>
+        <SECRET>${env.SECRET}</SECRET>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -87,6 +93,12 @@
             <version>24.0.0</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>java-dotenv</artifactId>
+            <version>5.2.2</version>
+        </dependency>
+
     </dependencies>
     <dependencyManagement>
         <dependencies>
@@ -100,6 +112,7 @@
         </dependencies>
     </dependencyManagement>
 
+
     <build>
         <plugins>
             <plugin>
@@ -109,8 +122,31 @@
                     <mainClass>qwerdsa53.apigateway.ApiGatewayApplication</mainClass>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>load-env</id>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                        <configuration>
+                            <executable>cmd</executable>
+                            <arguments>
+                                <argument>/c</argument>
+                                <argument>for /f &quot;usebackq tokens=*&quot; %i in (.env) do set %i &amp;&amp; echo Loading .env variables...</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
+
     <repositories>
         <repository>
             <id>spring-milestones</id>

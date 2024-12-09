@@ -3,7 +3,7 @@ package org.example.userservice.services;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.example.userservice.dto.UserRegistrationDto;
+import org.example.userservice.model.dto.UserRegistrationDto;
 import org.example.userservice.model.User;
 import org.example.userservice.repo.UserRepository;
 import org.springframework.dao.DataIntegrityViolationException;

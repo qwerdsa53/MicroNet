@@ -1,8 +1,6 @@
 server:
   port: 8080
 spring:
-  #  main:
-  #    allow-bean-definition-overriding: true
   application:
     name: api-gateway
   data:
@@ -21,4 +19,5 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+app.secret: ${SECRET}
 debug: true

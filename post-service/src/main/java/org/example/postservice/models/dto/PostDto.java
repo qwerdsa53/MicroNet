@@ -1,4 +1,4 @@
-package org.example.postservice.dto;
+package org.example.postservice.models.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
