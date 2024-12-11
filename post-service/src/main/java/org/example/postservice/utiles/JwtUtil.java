@@ -25,11 +25,11 @@ public class JwtUtil {
 
     public Long extractUserId(String token) {
         Claims claims = extractClaims(token);
-        Object userId = claims.get("userId"); // Извлечение поля userId
+        Object userId = claims.get("userId");
         if (userId instanceof Integer) {
-            return ((Integer) userId).longValue(); // Если userId хранится как Integer
+            return ((Integer) userId).longValue();
         } else if (userId instanceof Long) {
-            return (Long) userId; // Если userId хранится как Long
+            return (Long) userId;
         }
         return null;
     }

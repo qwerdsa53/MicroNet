@@ -15,7 +15,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class FeedService {
     private final RestTemplate restTemplate;
 
-    @Value("${post-service.url:http://localhost:8083/api/v1/posts}")
+    @Value("${post-service.url:http://posts-service:8083/api/v1/posts}")
     private String postServiceUrl;
 
     public Object getAllPosts(int page, int size) {

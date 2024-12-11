@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: feed-service-config
+data:
+  REDIS_HOST: "redis"
+  POST_SERVICE_URL: "http://posts-service:8083/api/v1/posts"

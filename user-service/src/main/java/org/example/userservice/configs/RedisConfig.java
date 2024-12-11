@@ -1,5 +1,6 @@
 package org.example.userservice.configs;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -11,6 +12,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericToStringSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+@Slf4j
 @Configuration
 @EnableAutoConfiguration(exclude = {RedisReactiveAutoConfiguration.class})
 public class RedisConfig {
@@ -26,8 +28,14 @@ public class RedisConfig {
 
     @Bean
     public LettuceConnectionFactory jwtConnectionFactory() {
+        String redisHost = System.getenv("REDIS_HOST");
+        if (redisHost == null) {
+            throw new IllegalStateException("REDIS_HOST environment variable is not set");
+        }
         RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
-        configuration.setDatabase(0); // bd №0
+        configuration.setHostName(redisHost);
+        configuration.setPort(6379);
+        configuration.setDatabase(0);
         return new LettuceConnectionFactory(configuration);
     }
 
