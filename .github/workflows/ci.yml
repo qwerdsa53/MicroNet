@@ -32,7 +32,7 @@ jobs:
           --health-retries=3
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
+          POSTGRES_PASSWORD: 1423
           POSTGRES_DB: cms
 
       redis:
@@ -48,8 +48,7 @@ jobs:
       REDIS_HOST: localhost
       REDIS_PORT: 6379
       SECRET: kzM6i0bTVHVswcm2EWgNwGgyaMVoufz1DhSkWimmjhGSlYeoIr+51jZm6govxPRf80ZSeJ7ILE0aYjpzm9OQgw==kzM6i0bTVHVswcm2EWgNwGgyaMVoufz1DhSkWimmjhGSlYeoIr+51jZm6govxPRf80ZSeJ7ILE0aYjpzm9OQgw==
-      YANDEX_EMAIL: trackMyFinance@yandex.ru
-      YANDEX_PASSWORD: ymifeklivoirpdzj
+
 
     steps:
       - name: Checkout repository
@@ -116,8 +115,7 @@ jobs:
       REDIS_HOST: localhost
       REDIS_PORT: 6379
       SECRET: kzM6i0bTVHVswcm2EWgNwGgyaMVoufz1DhSkWimmjhGSlYeoIr+51jZm6govxPRf80ZSeJ7ILE0aYjpzm9OQgw==kzM6i0bTVHVswcm2EWgNwGgyaMVoufz1DhSkWimmjhGSlYeoIr+51jZm6govxPRf80ZSeJ7ILE0aYjpzm9OQgw==
-      YANDEX_EMAIL: trackMyFinance@yandex.ru
-      YANDEX_PASSWORD: ymifeklivoirpdzj
+
 
     steps:
       - name: Checkout repository
@@ -136,7 +134,7 @@ jobs:
         run: |
           psql -h localhost -U postgres -d userdb -c "SELECT 1;"
         env:
-          PGPASSWORD: password
+          PGPASSWORD: 1423
 
       - name: Build user-service
         working-directory: ./user-service
@@ -145,9 +143,9 @@ jobs:
       - name: Test user-service
         working-directory: ./user-service
         env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/CMS
-          SPRING_DATASOURCE_USERNAME: postgres
-          SPRING_DATASOURCE_PASSWORD: 1423
+          P_URL: jdbc:postgresql://localhost:5432/CMS
+          P_USERNAME: postgres
+          P_PASSWORD: 1423
           REDIS_HOST: localhost
           REDIS_PORT: 6379
         run: mvn test
