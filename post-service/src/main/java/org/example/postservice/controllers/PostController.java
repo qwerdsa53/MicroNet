@@ -92,7 +92,7 @@ public class PostController {
         try {
             Page<PostDto> posts = postService.getAllPosts(page, size);
             return ResponseEntity.ok(posts);
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("Error: {}", e.toString());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error");
         }
