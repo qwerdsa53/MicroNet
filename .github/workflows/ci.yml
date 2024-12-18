@@ -5,20 +5,41 @@ on:
     branches:
       - master
       - test-actions
-    paths:
-      - "api-gateway/**"
-      - "user-service/**"
   pull_request:
     branches:
       - master
-    paths:
-      - "api-gateway/**"
-      - "user-service/**"
-
 
 jobs:
+  check-files:
+    runs-on: ubuntu-latest
+    outputs:
+      api-gateway-changed: ${{ steps.check-api-gateway.outputs.changed }}
+      user-service-changed: ${{ steps.check-user-service.outputs.changed }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Check changes in api-gateway
+        id: check-api-gateway
+        run: |
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^api-gateway/'; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check changes in user-service
+        id: check-user-service
+        run: |
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^user-service/'; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
   api-gateway:
-    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'api-gateway') || github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'api-gateway'
+    needs: check-files
+    if: needs.check-files.outputs.api-gateway-changed == 'true'
     runs-on: ubuntu-latest
 
     services:
@@ -48,8 +69,7 @@ jobs:
       P_USERNAME: postgres
       REDIS_HOST: localhost
       REDIS_PORT: 6379
-      SECRET: kzM6i0bTVHVswcm2EWgNwGgyaMVoufz1DhSkWimmjhGSlYeoIr+51jZm6govxPRf80ZSeJ7ILE0aYjpzm9OQgw==kzM6i0bTVHVswcm2EWgNwGgyaMVoufz1DhSkWimmjhGSlYeoIr+51jZm6govxPRf80ZSeJ7ILE0aYjpzm9OQgw==
-
+      SECRET: kzM6i0bTVHVswcm2EWgNwGgyaMVoufz1DhSkWimmjhGSlYeoIr+51jZm6govxPRf80ZSeJ7ILE0aYjpzm9OQgw==
 
     steps:
       - name: Checkout repository
@@ -60,15 +80,6 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-
-      - name: Install PostgreSQL client
-        run: sudo apt-get install -y postgresql-client
-
-      - name: Check Postgres connection
-        run: |
-          psql -h localhost -U postgres -d cms -c "SELECT 1;"
-        env:
-          PGPASSWORD: 1423
 
       - name: Build api-gateway
         working-directory: ./api-gateway
@@ -85,7 +96,8 @@ jobs:
         run: mvn test
 
   user-service:
-    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'user-service') || github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'user-service'
+    needs: check-files
+    if: needs.check-files.outputs.user-service-changed == 'true'
     runs-on: ubuntu-latest
 
     services:
@@ -115,8 +127,7 @@ jobs:
       P_USERNAME: postgres
       REDIS_HOST: localhost
       REDIS_PORT: 6379
-      SECRET: kzM6i0bTVHVswcm2EWgNwGgyaMVoufz1DhSkWimmjhGSlYeoIr+51jZm6govxPRf80ZSeJ7ILE0aYjpzm9OQgw==kzM6i0bTVHVswcm2EWgNwGgyaMVoufz1DhSkWimmjhGSlYeoIr+51jZm6govxPRf80ZSeJ7ILE0aYjpzm9OQgw==
-
+      SECRET: kzM6i0bTVHVswcm2EWgNwGgyaMVoufz1DhSkWimmjhGSlYeoIr+51jZm6govxPRf80ZSeJ7ILE0aYjpzm9OQgw==
 
     steps:
       - name: Checkout repository
@@ -128,15 +139,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Install PostgreSQL client
-        run: sudo apt-get install -y postgresql-client
-
-      - name: Check Postgres connection
-        run: |
-          psql -h localhost -U postgres -d userdb -c "SELECT 1;"
-        env:
-          PGPASSWORD: 1423
-
       - name: Build user-service
         working-directory: ./user-service
         run: mvn clean install
@@ -144,9 +146,9 @@ jobs:
       - name: Test user-service
         working-directory: ./user-service
         env:
-          P_URL: jdbc:postgresql://localhost:5432/CMS
-          P_USERNAME: postgres
-          P_PASSWORD: 1423
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/CMS
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: 1423
           REDIS_HOST: localhost
           REDIS_PORT: 6379
         run: mvn test
