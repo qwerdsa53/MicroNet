@@ -4,12 +4,13 @@ on:
   push:
     branches:
       - main
+      - test-actions
     paths:
       - "api-gateway/**"
       - "user-service/**"
   pull_request:
     branches:
-      - main
+      - master
     paths:
       - "api-gateway/**"
       - "user-service/**"
