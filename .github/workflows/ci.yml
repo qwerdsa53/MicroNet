@@ -18,7 +18,7 @@ on:
 
 jobs:
   api-gateway:
-    if: contains(github.event.head_commit.message, 'api-gateway') || github.event_name == 'pull_request'
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'api-gateway') || github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'api-gateway'
     runs-on: ubuntu-latest
 
     services:
@@ -85,7 +85,7 @@ jobs:
         run: mvn test
 
   user-service:
-    if: contains(github.event.head_commit.message, 'user-service') || github.event_name == 'pull_request'
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'user-service') || github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'user-service'
     runs-on: ubuntu-latest
 
     services:
