@@ -3,7 +3,7 @@ name: Multi-Service CI/CD
 on:
   push:
     branches:
-      - main
+      - master
       - test-actions
     paths:
       - "api-gateway/**"
