@@ -72,13 +72,13 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U postgres"
+          --health-cmd="pg_isready -U ${{ secrets.P_USERNAME }}"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=3
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: 1423
+          POSTGRES_USER: ${{ secrets.P_USERNAME }}
+          POSTGRES_PASSWORD: ${{ secrets.P_PASSWORD }}
           POSTGRES_DB: cms
 
       redis:
@@ -88,12 +88,12 @@ jobs:
         options: --health-cmd="redis-cli ping || exit 1"
 
     env:
-      P_PASSWORD: 1423
+      P_PASSWORD: ${{ secrets.P_PASSWORD }}
       P_URL: jdbc:postgresql://localhost:5432/cms
-      P_USERNAME: postgres
+      P_USERNAME: ${{ secrets.P_USERNAME }}
       REDIS_HOST: localhost
       REDIS_PORT: 6379
-      SECRET: kzM6i0bTVHVswcm2EWgNwGgyaMVoufz1DhSkWimmjhGSlYeoIr+51jZm6govxPRf80ZSeJ7ILE0aYjpzm9OQgw==
+      SECRET: ${{ secrets.SECRET }}
 
     steps:
       - name: Checkout repository
@@ -113,8 +113,8 @@ jobs:
         working-directory: ./api-gateway
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/cms
-          SPRING_DATASOURCE_USERNAME: postgres
-          SPRING_DATASOURCE_PASSWORD: 1423
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.P_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.P_PASSWORD }}
           REDIS_HOST: localhost
           REDIS_PORT: 6379
         run: mvn test
@@ -130,13 +130,13 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U postgres"
+          --health-cmd="pg_isready -U ${{ secrets.P_USERNAME }}"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=3
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: 1423
+          POSTGRES_USER: ${{ secrets.P_USERNAME }}
+          POSTGRES_PASSWORD: ${{ secrets.P_PASSWORD }}
           POSTGRES_DB: CMS
 
       redis:
@@ -146,12 +146,12 @@ jobs:
         options: --health-cmd="redis-cli ping || exit 1"
 
     env:
-      P_PASSWORD: 1423
+      P_PASSWORD: ${{ secrets.P_PASSWORD }}
       P_URL: jdbc:postgresql://localhost:5432/CMS
-      P_USERNAME: postgres
+      P_USERNAME: ${{ secrets.P_USERNAME }}
       REDIS_HOST: localhost
       REDIS_PORT: 6379
-      SECRET: kzM6i0bTVHVswcm2EWgNwGgyaMVoufz1DhSkWimmjhGSlYeoIr+51jZm6govxPRf80ZSeJ7ILE0aYjpzm9OQgw==
+      SECRET: ${{ secrets.SECRET }}
 
     steps:
       - name: Checkout repository
@@ -171,8 +171,8 @@ jobs:
         working-directory: ./user-service
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/CMS
-          SPRING_DATASOURCE_USERNAME: postgres
-          SPRING_DATASOURCE_PASSWORD: 1423
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.P_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.P_PASSWORD }}
           REDIS_HOST: localhost
           REDIS_PORT: 6379
         run: mvn test
@@ -187,13 +187,13 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U postgres"
+          --health-cmd="pg_isready -U ${{ secrets.P_USERNAME }}"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=3
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: 1423
+          POSTGRES_USER: ${{ secrets.P_USERNAME }}
+          POSTGRES_PASSWORD: ${{ secrets.P_PASSWORD }}
           POSTGRES_DB: CMS
 
       redis:
@@ -203,12 +203,12 @@ jobs:
         options: --health-cmd="redis-cli ping || exit 1"
 
     env:
-      P_PASSWORD: 1423
+      P_PASSWORD: ${{ secrets.P_PASSWORD }}
       P_URL: jdbc:postgresql://localhost:5432/CMS
-      P_USERNAME: postgres
+      P_USERNAME: ${{ secrets.P_USERNAME }}
       REDIS_HOST: localhost
       REDIS_PORT: 6379
-      SECRET: kzM6i0bTVHVswcm2EWgNwGgyaMVoufz1DhSkWimmjhGSlYeoIr+51jZm6govxPRf80ZSeJ7ILE0aYjpzm9OQgw==
+      SECRET: ${{ secrets.SECRET }}
 
     steps:
       - name: Checkout repository
@@ -228,8 +228,8 @@ jobs:
         working-directory: ./feed-service
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/CMS
-          SPRING_DATASOURCE_USERNAME: postgres
-          SPRING_DATASOURCE_PASSWORD: 1423
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.P_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.P_PASSWORD }}
           REDIS_HOST: localhost
           REDIS_PORT: 6379
         run: mvn test
@@ -244,13 +244,13 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U postgres"
+          --health-cmd="pg_isready -U ${{ secrets.P_USERNAME }}"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=3
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: 1423
+          POSTGRES_USER: ${{ secrets.P_USERNAME }}
+          POSTGRES_PASSWORD: ${{ secrets.P_PASSWORD }}
           POSTGRES_DB: CMS
 
       redis:
@@ -260,12 +260,12 @@ jobs:
         options: --health-cmd="redis-cli ping || exit 1"
 
     env:
-      P_PASSWORD: 1423
+      P_PASSWORD: ${{ secrets.P_PASSWORD }}
       P_URL: jdbc:postgresql://localhost:5432/CMS
-      P_USERNAME: postgres
+      P_USERNAME: ${{ secrets.P_USERNAME }}
       REDIS_HOST: localhost
       REDIS_PORT: 6379
-      SECRET: kzM6i0bTVHVswcm2EWgNwGgyaMVoufz1DhSkWimmjhGSlYeoIr+51jZm6govxPRf80ZSeJ7ILE0aYjpzm9OQgw==
+      SECRET: ${{ secrets.SECRET }}
 
     steps:
       - name: Checkout repository
@@ -285,8 +285,8 @@ jobs:
         working-directory: ./post-service
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/CMS
-          SPRING_DATASOURCE_USERNAME: postgres
-          SPRING_DATASOURCE_PASSWORD: 1423
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.P_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.P_PASSWORD }}
           REDIS_HOST: localhost
           REDIS_PORT: 6379
         run: mvn test
