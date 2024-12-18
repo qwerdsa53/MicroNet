@@ -11,7 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ApiGatewayApplicationTests {
-//123123112312
+//123123112312йцуцй
     @Test
     void simpleTest() {
         assertEquals(1+1, 2);
