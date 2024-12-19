@@ -161,7 +161,7 @@ jobs:
         run: |
           LATEST_VERSION=$(curl -s "https://registry.hub.docker.com/v2/repositories/$IMAGE_NAME/tags" | jq -r '.results | map(.name) | map(select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))) | sort | last // "0.0.0"')
           IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_VERSION"
-          NEW_VERSION="$MAJOR.$MINOR.$((PATCH + 1))"
+          NEW_VERSION="$MAJOR.$MINOR.$((PATCH))"
           echo "Обновляем версию образа на: $NEW_VERSION"
       
           sed -i "s|image: $IMAGE_NAME:.*|image: $IMAGE_NAME:$NEW_VERSION|" ./kubernetes/api-gateway/api-gateway-deployment.yaml
