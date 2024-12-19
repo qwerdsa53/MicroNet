@@ -157,10 +157,7 @@ jobs:
       - name: Install Yandex Cloud CLI
         run: |
           curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
-          echo 'export PATH=$HOME/yandex-cloud/bin:$PATH' >> $GITHUB_ENV
-          source ~/.bashrc || true
-          export PATH=$HOME/yandex-cloud/bin:$PATH
-          echo "PATH updated: $PATH"
+          echo "PATH=$HOME/yandex-cloud/bin:$PATH" >> $GITHUB_ENV
 
       - name: Deploy to Yandex Cloud Kubernetes
         env:
