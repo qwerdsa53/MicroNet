@@ -154,6 +154,21 @@ jobs:
 
           echo "image=$IMAGE_NAME:$NEW_VERSION" >> $GITHUB_ENV
 
+      - name: Update Deployment Image Version
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/api-gateway
+        run: |
+          LATEST_VERSION=$(curl -s "https://registry.hub.docker.com/v2/repositories/$IMAGE_NAME/tags" | jq -r '.results | map(.name) | map(select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))) | sort | last // "0.0.0"')
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_VERSION"
+          NEW_VERSION="$MAJOR.$MINOR.$((PATCH + 1))"
+          echo "Обновляем версию образа на: $NEW_VERSION"
+      
+          sed -i "s|image: $IMAGE_NAME:.*|image: $IMAGE_NAME:$NEW_VERSION|" ./kubernetes/api-gateway/api-gateway-deployment.yaml
+          echo "Файл деплоймента после изменений:"
+          cat ./kubernetes/api-gateway/api-gateway-deployment.yaml
+
+
       - name: Install Yandex Cloud CLI
         run: |
           curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
