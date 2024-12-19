@@ -4,6 +4,6 @@ metadata:
   name: api-gateway-config
 data:
   REDIS_HOST: "redis"
-  USER_SERVICE_URL: "http://user-service:8082"
-  POST_SERVICE_URL: "http://posts-service:8083"
-  FEED_SERVICE_URL: "http://feed-service:8084"
+  USER_SERVICE_URI: "http://user-service:8082"
+  POST_SERVICE_URI: "http://posts-service:8083"
+  FEED_SERVICE_URI: "http://feed-service:8084"
