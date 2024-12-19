@@ -110,6 +110,12 @@ jobs:
       - name: Install jq
         run: sudo apt-get install -y jq
 
+      - name: Check Docker Hub Credentials
+        run: |
+          if [ -z "$DOCKER_USERNAME" ]; then echo "DOCKER_USERNAME is not set"; else echo "DOCKER_USERNAME is set"; fi
+          if [ -z "$DOCKER_PASSWORD" ]; then echo "DOCKER_PASSWORD is not set"; else echo "DOCKER_PASSWORD is set"; fi
+
+
       - name: Log in to Docker Hub
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
