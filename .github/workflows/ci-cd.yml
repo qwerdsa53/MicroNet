@@ -157,7 +157,7 @@ jobs:
       - name: Install Yandex Cloud CLI
         run: |
           curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
-          source "/home/runner/.bashrc
+          source "/home/runner/.bashrc"
 
       - name: Deploy to Yandex Cloud Kubernetes
         env:
