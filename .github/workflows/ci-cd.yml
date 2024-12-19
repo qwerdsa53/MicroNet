@@ -160,11 +160,8 @@ jobs:
           IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/api-gateway
         run: |
           LATEST_VERSION=$(curl -s "https://registry.hub.docker.com/v2/repositories/$IMAGE_NAME/tags" | jq -r '.results | map(.name) | map(select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))) | sort | last // "0.0.0"')
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_VERSION"
-          NEW_VERSION="$MAJOR.$MINOR.$((PATCH))"
-          echo "Обновляем версию образа на: $NEW_VERSION"
-      
-          sed -i "s|image: $IMAGE_NAME:.*|image: $IMAGE_NAME:$NEW_VERSION|" ./kubernetes/api-gateway/api-gateway-deployment.yaml
+          echo "Устанавливаем последнюю версию образа: $LATEST_VERSION"
+          sed -i "s|image: $IMAGE_NAME:.*|image: $IMAGE_NAME:$LATEST_VERSION|" ./kubernetes/api-gateway/api-gateway-deployment.yaml
           echo "Файл деплоймента после изменений:"
           cat ./kubernetes/api-gateway/api-gateway-deployment.yaml
 
@@ -191,9 +188,11 @@ jobs:
             --external \
             --force --kubeconfig $KUBECONFIG_PATH
 
+          echo "Удаляем старый деплоймент..."
+          kubectl --kubeconfig=$KUBECONFIG_PATH delete deployment api-gateway || true
+
+          echo "Применяем новый файл деплоймента..."
           kubectl --kubeconfig=$KUBECONFIG_PATH apply -f ./kubernetes/api-gateway/api-gateway-deployment.yaml
-
-
 
   user-service:
     needs: check-files
