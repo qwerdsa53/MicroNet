@@ -176,7 +176,7 @@ jobs:
             --external \
             --force --kubeconfig $KUBECONFIG_PATH
 
-          kubectl --kubeconfig=$KUBECONFIG_PATH apply -f ./kubernetes/api-gateway-deployment.yaml
+          kubectl --kubeconfig=$KUBECONFIG_PATH apply -f ./kubernetes/api-gateway/api-gateway-deployment.yaml
 
 
 
