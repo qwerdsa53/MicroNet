@@ -154,6 +154,12 @@ jobs:
 
           echo "image=$IMAGE_NAME:$NEW_VERSION" >> $GITHUB_ENV
 
+      - name: Install Yandex Cloud CLI
+        run: |
+          curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
+          echo 'export PATH=$HOME/yandex-cloud/bin:$PATH' >> $GITHUB_ENV
+          source $GITHUB_ENV
+
       - name: Deploy to Yandex Cloud Kubernetes
         env:
           YC_KEY_JSON: ${{ secrets.YC_KEY_JSON }}
