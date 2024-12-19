@@ -17,7 +17,7 @@ public class GatewayRoutesConfig {
 
     @Value("${feed.service.uri}")
     private String feedServiceUri;
-
+//1
     @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
