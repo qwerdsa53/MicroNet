@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: api-gateway
-          image: qwerdsa53/api-gateway:1.1.4
+          image: qwerdsa53/api-gateway:1.1.3
           ports:
             - containerPort: 8080
           env:
@@ -23,21 +23,21 @@ spec:
                 configMapKeyRef:
                   name: api-gateway-config
                   key: REDIS_HOST
-            - name: USER_SERVICE_URL
+            - name: USER_SERVICE_URI
               valueFrom:
                 configMapKeyRef:
                   name: api-gateway-config
-                  key: USER_SERVICE_URL
-            - name: POST_SERVICE_URL
+                  key: USER_SERVICE_URI
+            - name: POST_SERVICE_URI
               valueFrom:
                 configMapKeyRef:
                   name: api-gateway-config
-                  key: POST_SERVICE_URL
-            - name: FEED_SERVICE_URL
+                  key: POST_SERVICE_URI
+            - name: FEED_SERVICE_URI
               valueFrom:
                 configMapKeyRef:
                   name: api-gateway-config
-                  key: FEED_SERVICE_URL
+                  key: FEED_SERVICE_URI
 
             - name: P_URL
               valueFrom:
