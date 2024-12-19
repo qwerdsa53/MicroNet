@@ -111,13 +111,21 @@ jobs:
       - name: Install jq
         run: sudo apt-get install -y jq
 
-      - name: Check Docker Hub Credentials
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Check if Secrets are Accessible
         run: |
-          echo "DOCKER_USERNAME"
-
+          if [ -z "${{ secrets.CLUSTER_ID }}" ]; then echo "CLUSTER_ID is NOT accessible"; else echo "CLUSTER_ID is accessible"; fi
+          if [ -z "${{ secrets.DOCKER_HUB_PASSWORD }}" ]; then echo "DOCKER_HUB_PASSWORD is NOT accessible"; else echo "DOCKER_HUB_PASSWORD is accessible"; fi
+          if [ -z "${{ secrets.DOCKER_HUB_USERNAME }}" ]; then echo "DOCKER_HUB_USERNAME is NOT accessible"; else echo "DOCKER_HUB_USERNAME is accessible"; fi
+          if [ -z "${{ secrets.DOCKER_PASSWORD }}" ]; then echo "DOCKER_PASSWORD is NOT accessible"; else echo "DOCKER_PASSWORD is accessible"; fi
+          if [ -z "${{ secrets.DOCKER_USERNAME }}" ]; then echo "DOCKER_USERNAME is NOT accessible"; else echo "DOCKER_USERNAME is accessible"; fi
+          if [ -z "${{ secrets.FOLDER_ID }}" ]; then echo "FOLDER_ID is NOT accessible"; else echo "FOLDER_ID is accessible"; fi
+          if [ -z "${{ secrets.KUBECONFIG }}" ]; then echo "KUBECONFIG is NOT accessible"; else echo "KUBECONFIG is accessible"; fi
+          if [ -z "${{ secrets.P_PASSWORD }}" ]; then echo "P_PASSWORD is NOT accessible"; else echo "P_PASSWORD is accessible"; fi
+          if [ -z "${{ secrets.P_USERNAME }}" ]; then echo "P_USERNAME is NOT accessible"; else echo "P_USERNAME is accessible"; fi
+          if [ -z "${{ secrets.SECRET }}" ]; then echo "SECRET is NOT accessible"; else echo "SECRET is accessible"; fi
+          if [ -z "${{ secrets.YC_KEY_JSON }}" ]; then echo "YC_KEY_JSON is NOT accessible"; else echo "YC_KEY_JSON is accessible"; fi
+      
+    
 
       - name: Log in to Docker Hub
         env:
