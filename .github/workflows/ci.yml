@@ -61,17 +61,10 @@ jobs:
             echo "changed=false" >> $GITHUB_OUTPUT
           fi
 
-  build-and-test:
+  api-gateway:
     needs: check-files
+    if: needs.check-files.outputs.api-gateway-changed == 'true'
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        service: [api-gateway, user-service, post-service, feed-service]
-    if: |
-      matrix.service == 'api-gateway' && needs.check-files.outputs['api-gateway-changed'] == 'true' ||
-      matrix.service == 'user-service' && needs.check-files.outputs['user-service-changed'] == 'true' ||
-      matrix.service == 'post-service' && needs.check-files.outputs['post-service-changed'] == 'true' ||
-      matrix.service == 'feed-service' && needs.check-files.outputs['feed-service-changed'] == 'true'
 
     services:
       postgres:
@@ -99,8 +92,137 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Build and test ${{ matrix.service }}
-        working-directory: ./${{ matrix.service }}
+      - name: Build and Test api-gateway
+        working-directory: ./api-gateway
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/cms
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.P_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.P_PASSWORD }}
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+        run: |
+          mvn clean install
+          mvn test
+
+  user-service:
+    needs: check-files
+    if: needs.check-files.outputs.user-service-changed == 'true'
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:13
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: ${{ secrets.P_USERNAME }}
+          POSTGRES_PASSWORD: ${{ secrets.P_PASSWORD }}
+          POSTGRES_DB: cms
+
+      redis:
+        image: redis:6
+        ports:
+          - 6379:6379
+        options: --health-cmd="redis-cli ping || exit 1"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build and Test user-service
+        working-directory: ./user-service
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/cms
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.P_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.P_PASSWORD }}
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+        run: |
+          mvn clean install
+          mvn test
+
+  post-service:
+    needs: check-files
+    if: needs.check-files.outputs.post-service-changed == 'true'
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:13
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: ${{ secrets.P_USERNAME }}
+          POSTGRES_PASSWORD: ${{ secrets.P_PASSWORD }}
+          POSTGRES_DB: cms
+
+      redis:
+        image: redis:6
+        ports:
+          - 6379:6379
+        options: --health-cmd="redis-cli ping || exit 1"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build and Test post-service
+        working-directory: ./post-service
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/cms
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.P_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.P_PASSWORD }}
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+        run: |
+          mvn clean install
+          mvn test
+
+  feed-service:
+    needs: check-files
+    if: needs.check-files.outputs.feed-service-changed == 'true'
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:13
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: ${{ secrets.P_USERNAME }}
+          POSTGRES_PASSWORD: ${{ secrets.P_PASSWORD }}
+          POSTGRES_DB: cms
+
+      redis:
+        image: redis:6
+        ports:
+          - 6379:6379
+        options: --health-cmd="redis-cli ping || exit 1"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build and Test feed-service
+        working-directory: ./feed-service
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/cms
           SPRING_DATASOURCE_USERNAME: ${{ secrets.P_USERNAME }}
