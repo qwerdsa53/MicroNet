@@ -67,8 +67,11 @@ jobs:
     strategy:
       matrix:
         service: [api-gateway, user-service, post-service, feed-service]
-    if:
-      needs.check-files.outputs[matrix.service | append: '-changed' ] == 'true'
+    if: |
+      matrix.service == 'api-gateway' && needs.check-files.outputs['api-gateway-changed'] == 'true' ||
+      matrix.service == 'user-service' && needs.check-files.outputs['user-service-changed'] == 'true' ||
+      matrix.service == 'post-service' && needs.check-files.outputs['post-service-changed'] == 'true' ||
+      matrix.service == 'feed-service' && needs.check-files.outputs['feed-service-changed'] == 'true'
 
     services:
       postgres:
