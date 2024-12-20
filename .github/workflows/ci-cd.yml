@@ -65,7 +65,6 @@ jobs:
     needs: check-files
     if: needs.check-files.outputs.api-gateway-changed == 'true'
     runs-on: ubuntu-latest
-    environment: env
 
     services:
       postgres:
