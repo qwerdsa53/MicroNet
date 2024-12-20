@@ -110,22 +110,6 @@ jobs:
       - name: Install jq
         run: sudo apt-get install -y jq
 
-      - name: Check if Secrets are Accessible
-        run: |
-          if [ -z "${{ secrets.CLUSTER_ID }}" ]; then echo "CLUSTER_ID is NOT accessible"; else echo "CLUSTER_ID is accessible"; fi
-          if [ -z "${{ secrets.DOCKER_HUB_PASSWORD }}" ]; then echo "DOCKER_HUB_PASSWORD is NOT accessible"; else echo "DOCKER_HUB_PASSWORD is accessible"; fi
-          if [ -z "${{ secrets.DOCKER_HUB_USERNAME }}" ]; then echo "DOCKER_HUB_USERNAME is NOT accessible"; else echo "DOCKER_HUB_USERNAME is accessible"; fi
-          if [ -z "${{ secrets.DOCKER_PASSWORD }}" ]; then echo "DOCKER_PASSWORD is NOT accessible"; else echo "DOCKER_PASSWORD is accessible"; fi
-          if [ -z "${{ secrets.DOCKER_USERNAME }}" ]; then echo "DOCKER_USERNAME is NOT accessible"; else echo "DOCKER_USERNAME is accessible"; fi
-          if [ -z "${{ secrets.FOLDER_ID }}" ]; then echo "FOLDER_ID is NOT accessible"; else echo "FOLDER_ID is accessible"; fi
-          if [ -z "${{ secrets.KUBECONFIG }}" ]; then echo "KUBECONFIG is NOT accessible"; else echo "KUBECONFIG is accessible"; fi
-          if [ -z "${{ secrets.P_PASSWORD }}" ]; then echo "P_PASSWORD is NOT accessible"; else echo "P_PASSWORD is accessible"; fi
-          if [ -z "${{ secrets.P_USERNAME }}" ]; then echo "P_USERNAME is NOT accessible"; else echo "P_USERNAME is accessible"; fi
-          if [ -z "${{ secrets.SECRET }}" ]; then echo "SECRET is NOT accessible"; else echo "SECRET is accessible"; fi
-          if [ -z "${{ secrets.YC_KEY_JSON }}" ]; then echo "YC_KEY_JSON is NOT accessible"; else echo "YC_KEY_JSON is accessible"; fi
-      
-    
-
       - name: Log in to Docker Hub
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -287,6 +271,88 @@ jobs:
         run: |
           mvn clean install
           mvn test
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Log in to Docker Hub
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+
+      - name: Build and Push Docker Image
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+
+          IMAGE_NAME="${{ secrets.DOCKER_USERNAME }}/post-service"
+          LATEST_VERSION=$(curl -s "https://registry.hub.docker.com/v2/repositories/$IMAGE_NAME/tags" | jq -r '.results | map(.name) | map(select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))) | sort | last // "0.0.0"')
+          echo "Последняя версия: $LATEST_VERSION"
+
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_VERSION"
+          NEW_VERSION="$MAJOR.$MINOR.$((PATCH + 1))"
+          echo "Новая версия: $NEW_VERSION"
+
+          docker build -t $IMAGE_NAME:$NEW_VERSION ./post-service
+          docker push $IMAGE_NAME:$NEW_VERSION
+
+          echo "image=$IMAGE_NAME:$NEW_VERSION" >> $GITHUB_ENV
+
+      - name: Wait for Docker Hub to Update
+        run: sleep 10
+
+
+      - name: Update Deployment Image Version
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/post-service
+        run: |
+          echo "Получаем все доступные теги..."
+          ALL_TAGS=$(curl -s "https://registry.hub.docker.com/v2/repositories/$IMAGE_NAME/tags?page_size=100" | jq -r '[.results[].name] | map(select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))) | sort | last // "0.0.0"')
+          echo "Найдена последняя версия: $ALL_TAGS"
+          
+          LATEST_VERSION=$ALL_TAGS
+          echo "Устанавливаем последнюю версию образа: $LATEST_VERSION"
+          
+          sed -i "s|image: $IMAGE_NAME:.*|image: $IMAGE_NAME:$LATEST_VERSION|" ./kubernetes/api-gateway/post-service-deployment.yaml
+          echo "Файл деплоймента после изменений:"
+          cat ./kubernetes/post-service/post-service-deployment.yaml 
+
+
+      - name: Install Yandex Cloud CLI
+        run: |
+          curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
+          echo "PATH=$HOME/yandex-cloud/bin:$PATH" >> $GITHUB_ENV
+
+      - name: Deploy to Yandex Cloud Kubernetes
+        env:
+          YC_KEY_JSON: ${{ secrets.YC_KEY_JSON }}
+          CLUSTER_ID: ${{ secrets.CLUSTER_ID }}
+          FOLDER_ID: ${{ secrets.FOLDER_ID }}
+        run: |
+          mkdir -p ~/.config/yandex-cloud
+          echo "$YC_KEY_JSON" > ~/.config/yandex-cloud/key.json
+          yc config set service-account-key ~/.config/yandex-cloud/key.json
+          yc config set folder-id $FOLDER_ID
+
+          KUBECONFIG_PATH=~/.kube/config
+          yc managed-kubernetes cluster get-credentials \
+            --id $CLUSTER_ID \
+            --external \
+            --force --kubeconfig $KUBECONFIG_PATH
+
+          echo "Удаляем старый деплоймент..."
+          kubectl --kubeconfig=$KUBECONFIG_PATH delete deployment post-service || true
+
+          echo "Применяем новый файл деплоймента..."
+          kubectl --kubeconfig=$KUBECONFIG_PATH apply -f ./kubernetes/post-service/post-service-deployment.yaml
+
 
   feed-service:
     needs: check-files
