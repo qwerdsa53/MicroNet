@@ -320,7 +320,7 @@ jobs:
           LATEST_VERSION=$ALL_TAGS
           echo "Устанавливаем последнюю версию образа: $LATEST_VERSION"
           
-          sed -i "s|image: $IMAGE_NAME:.*|image: $IMAGE_NAME:$LATEST_VERSION|" ./kubernetes/api-gateway/post-service-deployment.yaml
+          sed -i "s|image: $IMAGE_NAME:.*|image: $IMAGE_NAME:$LATEST_VERSION|" ./kubernetes/post-service/post-service-deployment.yaml
           echo "Файл деплоймента после изменений:"
           cat ./kubernetes/post-service/post-service-deployment.yaml 
 
