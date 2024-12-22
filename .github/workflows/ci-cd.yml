@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - test-actions
   pull_request:
     branches:
       - master
@@ -560,4 +559,3 @@ jobs:
 
           echo "Применяем новый файл деплоймента..."
           kubectl --kubeconfig=$KUBECONFIG_PATH apply -f ./kubernetes/feed-service/feed-service-deployment.yaml
-

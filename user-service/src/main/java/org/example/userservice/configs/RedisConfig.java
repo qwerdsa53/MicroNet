@@ -11,7 +11,7 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericToStringSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-//1
+
 @Slf4j
 @Configuration
 @EnableAutoConfiguration(exclude = {RedisReactiveAutoConfiguration.class})
