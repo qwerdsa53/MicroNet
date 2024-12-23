@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class FeedService {
@@ -14,13 +16,17 @@ public class FeedService {
     @Value("${post-service.url:http://posts-service:8083/api/v1/posts}")
     private String postServiceUrl;
 
-    public Object getAllPosts(int page, int size) {
-        String url = UriComponentsBuilder.fromHttpUrl(postServiceUrl)
+    public Object getAllPosts(int page, int size, List<String> tags) {
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(postServiceUrl)
                 .path("/all")
                 .queryParam("page", page)
-                .queryParam("size", size)
-                .toUriString();
+                .queryParam("size", size);
 
+        if (tags != null && !tags.isEmpty()) {
+            uriBuilder.queryParam("tags", String.join(",", tags));
+        }
+
+        String url = uriBuilder.toUriString();
         return restTemplate.getForObject(url, Object.class);
     }
 }

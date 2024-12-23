@@ -9,6 +9,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
 //1
 @Slf4j
 @RestController
@@ -86,11 +89,12 @@ public class PostController {
     @GetMapping("/all")
     public ResponseEntity<?> getAllPosts(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) List<String> tags
     ) {
-        log.debug("Fetching posts with page: {} and size: {}", page, size);
+        log.debug("Fetching posts with page: {}, size: {}, tags: {}", page, size, tags);
         try {
-            Page<PostDto> posts = postService.getAllPosts(page, size);
+            Page<PostDto> posts = postService.getAllPosts(page, size, tags);
             return ResponseEntity.ok(posts);
         } catch (Exception e) {
             log.error("Error: {}", e.toString());

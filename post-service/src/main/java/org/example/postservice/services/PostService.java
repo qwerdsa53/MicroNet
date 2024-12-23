@@ -85,9 +85,20 @@ public class PostService {
         return deletedRows > 0;
     }
 
-    public Page<PostDto> getAllPosts(int page, int size) {
+    public Page<PostDto> getAllPosts(int page, int size, List<String> tags) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<Post> posts = postRepo.findAll(pageable);
+        Page<Post> posts;
+
+        if (tags != null && !tags.isEmpty()) {
+            List<Tag> tagEntities = tagRepo.findByNameIn(tags);
+            if (tagEntities.isEmpty()) {
+                return Page.empty(pageable);
+            }
+            posts = postRepo.findByTagsIn(tagEntities, pageable);
+        } else {
+            posts = postRepo.findAll(pageable);
+        }
+
         return posts.map(this::convertToDto);
     }
 
