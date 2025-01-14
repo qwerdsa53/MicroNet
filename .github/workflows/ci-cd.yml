@@ -16,7 +16,7 @@ jobs:
       user-service-changed: ${{ steps.check-user-service.outputs.changed }}
       post-service-changed: ${{ steps.check-post-service.outputs.changed }}
       feed-service-changed: ${{ steps.check-feed-service.outputs.changed }}
-      for-deploy: ${{steps.check-deploy-status.outputs}}
+      for-deploy: ${{steps.check-deploy-status.outputs.status}}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
