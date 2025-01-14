@@ -9,13 +9,14 @@ on:
       - master
 
 jobs:
-  check-files:
+  check-commit:
     runs-on: ubuntu-latest
     outputs:
       api-gateway-changed: ${{ steps.check-api-gateway.outputs.changed }}
       user-service-changed: ${{ steps.check-user-service.outputs.changed }}
       post-service-changed: ${{ steps.check-post-service.outputs.changed }}
       feed-service-changed: ${{ steps.check-feed-service.outputs.changed }}
+      for-deploy: ${{steps.check-deploy-status.outputs}}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -60,9 +61,21 @@ jobs:
             echo "changed=false" >> $GITHUB_OUTPUT
           fi
 
+      - name: Check if need to deploy
+        id: check-deploy-status
+        run: |
+          git fetch --depth=2 origin ${{ github.ref }}
+          MESSAGE="$(git log -1 --pretty=%B)"
+          if [[ "$MESSAGE" == *"deploy yc"* ]]; then
+            echo "status=true" >> $GITHUB_OUTPUT
+          else
+            echo "status=false" >> $GITHUB_OUTPUT
+          fi
+      
+
   api-gateway:
-    needs: check-files
-    if: needs.check-files.outputs.api-gateway-changed == 'true'
+    needs: check-commit
+    if: needs.check-commit.outputs.api-gateway-changed == 'true'
     runs-on: ubuntu-latest
 
     services:
@@ -104,12 +117,15 @@ jobs:
           mvn test
 
       - name: Set up Docker Buildx
+        if: needs.check-commit.outputs.for-deploy == 'true'
         uses: docker/setup-buildx-action@v2
 
       - name: Install jq
+        if: needs.check-commit.outputs.for-deploy == 'true'
         run: sudo apt-get install -y jq
 
       - name: Log in to Docker Hub
+        if: needs.check-commit.outputs.for-deploy == 'true'
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -117,6 +133,7 @@ jobs:
           echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 
       - name: Build and Push Docker Image
+        if: needs.check-commit.outputs.for-deploy == 'true'
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -137,10 +154,12 @@ jobs:
           echo "image=$IMAGE_NAME:$NEW_VERSION" >> $GITHUB_ENV
 
       - name: Wait for Docker Hub to Update
+        if: needs.check-commit.outputs.for-deploy == 'true'
         run: sleep 10
 
 
       - name: Update Deployment Image Version
+        if: needs.check-commit.outputs.for-deploy == 'true'
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/api-gateway
@@ -158,11 +177,13 @@ jobs:
       
 
       - name: Install Yandex Cloud CLI
+        if: needs.check-commit.outputs.for-deploy == 'true'
         run: |
           curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
           echo "PATH=$HOME/yandex-cloud/bin:$PATH" >> $GITHUB_ENV
 
       - name: Deploy to Yandex Cloud Kubernetes
+        if: needs.check-commit.outputs.for-deploy == 'true'
         env:
           YC_KEY_JSON: ${{ secrets.YC_KEY_JSON }}
           CLUSTER_ID: ${{ secrets.CLUSTER_ID }}
@@ -184,10 +205,11 @@ jobs:
 
           echo "Применяем новый файл деплоймента..."
           kubectl --kubeconfig=$KUBECONFIG_PATH apply -f ./kubernetes/api-gateway/api-gateway-deployment.yaml
+    
 
   user-service:
-    needs: check-files
-    if: needs.check-files.outputs.user-service-changed == 'true'
+    needs: check-commit
+    if: needs.check-commit.outputs.user-service-changed == 'true'
     runs-on: ubuntu-latest
 
     services:
@@ -312,8 +334,8 @@ jobs:
 
 
   post-service:
-    needs: check-files
-    if: needs.check-files.outputs.post-service-changed == 'true'
+    needs: check-commit
+    if: needs.check-commit.outputs.post-service-changed == 'true'
     runs-on: ubuntu-latest
 
     services:
@@ -437,8 +459,8 @@ jobs:
 
 
   feed-service:
-    needs: check-files
-    if: needs.check-files.outputs.feed-service-changed == 'true'
+    needs: check-commit
+    if: needs.check-commit.outputs.feed-service-changed == 'true'
     runs-on: ubuntu-latest
 
     services:
