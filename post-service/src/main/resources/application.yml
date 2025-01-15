@@ -1,12 +1,6 @@
 spring:
   application:
     name: post-service
-  data:
-    redis:
-      host: ${REDIS_HOST}
-      port: 6379
-      ssl:
-        enabled: true
   datasource:
     url: ${P_URL}
     username: ${P_USERNAME}

@@ -22,7 +22,7 @@ public class GatewaySecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeExchange(auth -> auth
-                        .pathMatchers("api/v1/auth/register", "api/v1/auth/login").permitAll()
+                        .pathMatchers("api/v1/user/auth/register", "api/v1/user/auth/login").permitAll()
                         .anyExchange().authenticated()
                 )
                 .addFilterAfter(jwtAuthenticationFilter, SecurityWebFiltersOrder.AUTHENTICATION);

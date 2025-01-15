@@ -71,7 +71,7 @@ jobs:
           else
             echo "status=false" >> $GITHUB_OUTPUT
           fi
-      
+  
 
   api-gateway:
     needs: check-commit
@@ -174,7 +174,7 @@ jobs:
           sed -i "s|image: $IMAGE_NAME:.*|image: $IMAGE_NAME:$LATEST_VERSION|" ./kubernetes/api-gateway/api-gateway-deployment.yaml
           echo "Файл деплоймента после изменений:"
           cat ./kubernetes/api-gateway/api-gateway-deployment.yaml 
-      
+
 
       - name: Install Yandex Cloud CLI
         if: needs.check-commit.outputs.for-deploy == 'true'
@@ -205,7 +205,7 @@ jobs:
 
           echo "Применяем новый файл деплоймента..."
           kubectl --kubeconfig=$KUBECONFIG_PATH apply -f ./kubernetes/api-gateway/api-gateway-deployment.yaml
-    
+  
 
   user-service:
     needs: check-commit
@@ -251,12 +251,15 @@ jobs:
           mvn test
 
       - name: Set up Docker Buildx
+        if: needs.check-commit.outputs.for-deploy == 'true'
         uses: docker/setup-buildx-action@v2
 
       - name: Install jq
+        if: needs.check-commit.outputs.for-deploy == 'true'
         run: sudo apt-get install -y jq
 
       - name: Log in to Docker Hub
+        if: needs.check-commit.outputs.for-deploy == 'true'
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -264,6 +267,7 @@ jobs:
           echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 
       - name: Build and Push Docker Image
+        if: needs.check-commit.outputs.for-deploy == 'true'
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -284,10 +288,12 @@ jobs:
           echo "image=$IMAGE_NAME:$NEW_VERSION" >> $GITHUB_ENV
 
       - name: Wait for Docker Hub to Update
+        if: needs.check-commit.outputs.for-deploy == 'true'
         run: sleep 10
 
 
       - name: Update Deployment Image Version
+        if: needs.check-commit.outputs.for-deploy == 'true'
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/user-service
@@ -305,11 +311,13 @@ jobs:
 
 
       - name: Install Yandex Cloud CLI
+        if: needs.check-commit.outputs.for-deploy == 'true'
         run: |
           curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
           echo "PATH=$HOME/yandex-cloud/bin:$PATH" >> $GITHUB_ENV
 
       - name: Deploy to Yandex Cloud Kubernetes
+        if: needs.check-commit.outputs.for-deploy == 'true'
         env:
           YC_KEY_JSON: ${{ secrets.YC_KEY_JSON }}
           CLUSTER_ID: ${{ secrets.CLUSTER_ID }}
@@ -376,12 +384,15 @@ jobs:
           mvn clean install
           mvn test
       - name: Set up Docker Buildx
+        if: needs.check-commit.outputs.for-deploy == 'true'
         uses: docker/setup-buildx-action@v2
 
       - name: Install jq
+        if: needs.check-commit.outputs.for-deploy == 'true'
         run: sudo apt-get install -y jq
 
       - name: Log in to Docker Hub
+        if: needs.check-commit.outputs.for-deploy == 'true'
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -389,6 +400,7 @@ jobs:
           echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 
       - name: Build and Push Docker Image
+        if: needs.check-commit.outputs.for-deploy == 'true'
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -409,10 +421,12 @@ jobs:
           echo "image=$IMAGE_NAME:$NEW_VERSION" >> $GITHUB_ENV
 
       - name: Wait for Docker Hub to Update
+        if: needs.check-commit.outputs.for-deploy == 'true'
         run: sleep 10
 
 
       - name: Update Deployment Image Version
+        if: needs.check-commit.outputs.for-deploy == 'true'
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/post-service
@@ -430,11 +444,13 @@ jobs:
 
 
       - name: Install Yandex Cloud CLI
+        if: needs.check-commit.outputs.for-deploy == 'true'
         run: |
           curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
           echo "PATH=$HOME/yandex-cloud/bin:$PATH" >> $GITHUB_ENV
 
       - name: Deploy to Yandex Cloud Kubernetes
+        if: needs.check-commit.outputs.for-deploy == 'true'
         env:
           YC_KEY_JSON: ${{ secrets.YC_KEY_JSON }}
           CLUSTER_ID: ${{ secrets.CLUSTER_ID }}
@@ -500,13 +516,17 @@ jobs:
         run: |
           mvn clean install
           mvn test
+
       - name: Set up Docker Buildx
+        if: needs.check-commit.outputs.for-deploy == 'true'
         uses: docker/setup-buildx-action@v2
 
       - name: Install jq
+        if: needs.check-commit.outputs.for-deploy == 'true'
         run: sudo apt-get install -y jq
 
       - name: Log in to Docker Hub
+        if: needs.check-commit.outputs.for-deploy == 'true'
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -514,6 +534,7 @@ jobs:
           echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 
       - name: Build and Push Docker Image
+        if: needs.check-commit.outputs.for-deploy == 'true'
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -534,10 +555,12 @@ jobs:
           echo "image=$IMAGE_NAME:$NEW_VERSION" >> $GITHUB_ENV
 
       - name: Wait for Docker Hub to Update
+        if: needs.check-commit.outputs.for-deploy == 'true'
         run: sleep 10
 
 
       - name: Update Deployment Image Version
+        if: needs.check-commit.outputs.for-deploy == 'true'
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/feed-service
@@ -555,11 +578,13 @@ jobs:
 
 
       - name: Install Yandex Cloud CLI
+        if: needs.check-commit.outputs.for-deploy == 'true'
         run: |
           curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
           echo "PATH=$HOME/yandex-cloud/bin:$PATH" >> $GITHUB_ENV
 
       - name: Deploy to Yandex Cloud Kubernetes
+        if: needs.check-commit.outputs.for-deploy == 'true'
         env:
           YC_KEY_JSON: ${{ secrets.YC_KEY_JSON }}
           CLUSTER_ID: ${{ secrets.CLUSTER_ID }}

@@ -16,10 +16,11 @@ public class GatewayRoutesConfig {
 
     @Value("${feed.service.uri}")
     private String feedServiceUri;
+
     @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
-                .route("user-service", r -> r.path("/api/v1/auth/**")
+                .route("user-service", r -> r.path("/api/v1/user/**")
                         .uri(userServiceUri))
                 .route("posts-service", r -> r.path("/api/v1/posts/**")
                         .uri(postsServiceUri))

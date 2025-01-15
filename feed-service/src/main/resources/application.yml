@@ -1,30 +1,8 @@
 spring:
   application:
     name: feed-service
-  data:
-    redis:
-      host: ${REDIS_HOST}
-      port: 6379
-      ssl:
-        enabled: true
-  datasource:
-    url: ${P_URL}
-    username: ${P_USERNAME}
-    password: ${P_PASSWORD}
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
-        show_sql: true
-        use_sql_comments: true
-        highlight_sql: true
 server:
   port: 8084
 debug: true
 post-service:
   url: ${POST_SERVICE_URL}
-jwt:
-  secret: ${SECRET}

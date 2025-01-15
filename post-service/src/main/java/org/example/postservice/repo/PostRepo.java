@@ -27,5 +27,6 @@ public interface PostRepo extends JpaRepository<Post, Long> {
     );
 
     Page<Post> findAll(Pageable pageable);
+
     Page<Post> findByTagsIn(List<Tag> tags, Pageable pageable);
 }

@@ -9,17 +9,8 @@ spring:
       port: 6379
       ssl:
         enabled: true
-  datasource:
-    url: ${P_URL}
-    username: ${P_USERNAME}
-    password: ${P_PASSWORD}
-  jpa:
-    hibernate:
-      ddl-auto: create
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-app.secret: ${SECRET}
+jwt:
+  secret: ${SECRET}
 user:
   service:
     uri: ${USER_SERVICE_URI}

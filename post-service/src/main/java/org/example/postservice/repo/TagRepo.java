@@ -10,5 +10,6 @@ import java.util.Optional;
 @Repository
 public interface TagRepo extends JpaRepository<Tag, Long> {
     List<Tag> findByNameIn(List<String> names);
+
     Optional<Tag> findByName(String name);
 }
