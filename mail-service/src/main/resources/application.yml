@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: mail-service
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: 6379
+      ssl:
+        enabled: true
+  mail:
+    host: smtp.yandex.ru
+    port: 465
+    username: ${YANDEX_EMAIL}
+    password: ${YANDEX_PASSWORD}
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: false
+          ssl:
+            enable: true
+          connectiontimeout: 50000
+          timeout: 50000
+          writetimeout: 50000
+
+server:
+  port: 8090
+
+debug: true
+
+YANDEX_EMAIL: ${YANDEX_EMAIL}
+
