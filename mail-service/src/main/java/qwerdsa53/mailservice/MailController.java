@@ -12,11 +12,11 @@ public class MailController {
     private final EmailService emailService;
 
     @PostMapping("/send/confirm")
-    public ResponseEntity<String> sendConfirmEmail(@RequestBody UserDto userDto){
+    public ResponseEntity<String> sendConfirmEmail(@RequestBody UserDto userDto) {
         try {
             emailService.sendConfirmEmail(userDto);
             return ResponseEntity.status(HttpStatus.OK).body("Email sent");
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }

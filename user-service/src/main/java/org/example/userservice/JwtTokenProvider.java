@@ -23,7 +23,7 @@ public class JwtTokenProvider {
     private String secret;
     private Key jwtSecret;
 
-    private final int jwtExpirationMs = 86400000; // 1 day
+    private final int JWT_EXPIRATION_MS = 86400000; // 1 day
 
     @PostConstruct
     public void init() {
@@ -37,26 +37,28 @@ public class JwtTokenProvider {
                 .claim("userId", user.getId())
                 .claim("roles", roles)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
-                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .setExpiration(new Date((new Date()).getTime() + JWT_EXPIRATION_MS))
+                .signWith(jwtSecret, SignatureAlgorithm.HS512)
                 .compact();
     }
 
     public String getUsernameFromToken(String token) {
-        return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getSubject();
+        return Jwts.parserBuilder().setSigningKey(jwtSecret).build().parseClaimsJws(token).getBody().getSubject();
     }
 
     public Long getUserIdFromToken(String token) {
-        Claims claims = Jwts.parser()
+        Claims claims = Jwts.parserBuilder()
                 .setSigningKey(jwtSecret)
+                .build()
                 .parseClaimsJws(token)
                 .getBody();
         return claims.get("userId", Long.class);
     }
 
     public Date getExpirationFromToken(String token) {
-        Claims claims = Jwts.parser()
+        Claims claims = Jwts.parserBuilder()
                 .setSigningKey(jwtSecret)
+                .build()
                 .parseClaimsJws(token)
                 .getBody();
         return claims.getExpiration();
@@ -68,10 +70,10 @@ public class JwtTokenProvider {
         return expiration.getTime() - currentTimeMillis;
     }
 
-    @SuppressWarnings("unchecked")
     public List<String> getRolesFromToken(String token) {
-        Claims claims = Jwts.parser()
+        Claims claims = Jwts.parserBuilder()
                 .setSigningKey(jwtSecret)
+                .build()
                 .parseClaimsJws(token)
                 .getBody();
 
@@ -87,7 +89,7 @@ public class JwtTokenProvider {
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
+            Jwts.parserBuilder().setSigningKey(jwtSecret).build().parseClaimsJws(token);
             return true;
         } catch (Exception e) {
             log.error("Invalid JWT Token: {}", e.getMessage());
