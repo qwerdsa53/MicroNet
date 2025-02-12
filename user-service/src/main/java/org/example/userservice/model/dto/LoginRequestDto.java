@@ -1,9 +1,9 @@
-package org.example.userservice.model;
+package org.example.userservice.model.dto;
 
 import lombok.Data;
 
 @Data
-public class LoginRequest {
+public class LoginRequestDto {
     private String username;
     private String password;
 }

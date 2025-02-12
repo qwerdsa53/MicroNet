@@ -1,4 +1,4 @@
-package org.example.userservice.services;
+package org.example.userservice.services.impl;
 
 import lombok.AllArgsConstructor;
 import org.example.userservice.model.User;

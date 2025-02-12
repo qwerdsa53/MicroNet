@@ -1,5 +1,6 @@
-package org.example.userservice.services;
+package org.example.userservice.services.impl;
 
+import org.example.userservice.services.BlackListService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -7,10 +8,10 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 
 @Service
-public class BlacklistService {
+public class BlackListServiceImpl implements BlackListService {
     private final RedisTemplate<String, String> redisTemplate;
 
-    public BlacklistService(@Qualifier("jwtRedisTemplate") RedisTemplate<String, String> redisTemplate) {
+    public BlackListServiceImpl(@Qualifier("jwtRedisTemplate") RedisTemplate<String, String> redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 

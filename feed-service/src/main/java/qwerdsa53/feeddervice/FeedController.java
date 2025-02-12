@@ -17,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 public class FeedController {
 
-    FeedService feedService;
+    private final FeedService feedService;
 
     @GetMapping
     public ResponseEntity<?> getAllPosts(

@@ -6,14 +6,15 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.example.userservice.model.Role;
 import org.example.userservice.model.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -31,7 +32,7 @@ public class JwtTokenProvider {
     }
 
     public String generateToken(User user) {
-        List<String> roles = Arrays.stream(user.getRole().split(" ")).toList();
+        Set<Role> roles = user.getRoles();
         return Jwts.builder()
                 .setSubject(user.getUsername())
                 .claim("userId", user.getId())
