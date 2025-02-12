@@ -5,6 +5,9 @@ import lombok.Data;
 
 import java.time.LocalDate;
 
+
+//TODO
+//DELETE ?
 @Data
 public class UserRegistrationDto {
     private Long id;

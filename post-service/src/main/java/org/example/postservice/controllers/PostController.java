@@ -34,12 +34,14 @@ public class PostController {
 
     @PostMapping
     public ResponseEntity<?> addPost(@RequestBody PostDto postDto, @RequestHeader("Authorization") String authorizationHeader) {
+        log.error("dto: {}, token: {}", postDto, authorizationHeader);
         try {
             String token = extractToken(authorizationHeader);
             Long userId = jwtUtil.extractUserId(token);
             postService.addPostByUserId(postDto, userId);
             return ResponseEntity.status(HttpStatus.CREATED).body("Post created");
         } catch (Exception e) {
+            e.printStackTrace();
             log.error("Error: ", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error");
         }

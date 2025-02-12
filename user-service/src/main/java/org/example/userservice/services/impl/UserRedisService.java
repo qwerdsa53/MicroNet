@@ -1,4 +1,4 @@
-package org.example.userservice.services;
+package org.example.userservice.services.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.example.userservice.model.dto.UserDto;
