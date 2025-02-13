@@ -8,6 +8,7 @@ import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
 
 
 @Configuration
@@ -22,7 +23,17 @@ public class GatewaySecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeExchange(auth -> auth
-                        .pathMatchers("api/v1/user/auth/register", "api/v1/user/auth/login").permitAll()
+                        .pathMatchers(
+                                "api/v1/user/auth/register",
+                                "api/v1/user/auth/login",
+                                "api/v1/user/auth/confirm**"
+                        ).permitAll()
+                        .matchers(exchange -> {
+                            String path = exchange.getRequest().getPath().toString();
+                            return path.matches("/api/v1/user/\\d+") ?
+                                    ServerWebExchangeMatcher.MatchResult.match() : ServerWebExchangeMatcher.MatchResult.notMatch();
+                        }).permitAll()
+                        .pathMatchers("/api/v1/user").authenticated()
                         .anyExchange().authenticated()
                 )
                 .addFilterAfter(jwtAuthenticationFilter, SecurityWebFiltersOrder.AUTHENTICATION);

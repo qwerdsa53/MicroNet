@@ -1,6 +1,7 @@
 package org.example.userservice.controllers;
 
 
+import jakarta.websocket.server.PathParam;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.userservice.JwtTokenProvider;
@@ -43,6 +44,12 @@ public class AuthController {
         User user = authService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
         String token = jwtTokenProvider.generateToken(user);
         return new TokenDto(token);
+    }
+
+    @PostMapping("/confirm")
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
+    public void confirmUser(@PathParam("token") String token) {
+        userService.activateUser(token);
     }
 
     @PostMapping("/logout")

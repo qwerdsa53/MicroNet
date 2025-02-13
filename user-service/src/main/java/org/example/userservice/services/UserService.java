@@ -12,7 +12,7 @@ public interface UserService {
 
     void deleteUser(Long id);
 
-    void activateUser(long userId);
+    void activateUser(String username);
 
     UserDto updateUser(String authorizationHeader, UserDto userDto);
 

@@ -27,6 +27,7 @@ import java.util.Set;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final TokenServiceImpl tokenService;
     private final JwtUtil jwtUtil;
 
 
@@ -83,8 +84,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Transactional
-    public void activateUser(long userId) {
-        userRepository.enableUserById(userId);
+    public void activateUser(String token) {
+        String email = tokenService.getUserEmailByToken(token);
+        if(userRepository.enableUserByEmail(email) == 0){
+            throw new UserNotFoundException("User not found");
+        }
+        tokenService.deleteToken(token);
     }
 
     public UserDto updateUser(String authorizationHeader, UserDto userDto) {

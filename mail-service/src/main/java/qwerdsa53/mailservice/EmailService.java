@@ -16,12 +16,12 @@ public class EmailService {
     @Value("${YANDEX_EMAIL}")
     private String trackMyFinanceEmail;
 
-    public void sendConfirmEmail(UserDto userDto) {
-        String token = tokenService.addTokenToRedis(userDto.getId());
-        sendEmail(userDto.getEmail(),
+    public void sendConfirmEmail(String email) {
+        String token = tokenService.addTokenToRedis(email);
+        sendEmail(email,
                 "Welcome to CMS!",
                 "Thank you for signing up. Please confirm your email: " +
-                        "http://localhost:8080/api/v1/auth/confirm?token=" + token
+                        "http://localhost:8080/api/v1/user/auth/confirm?token=" + token
         );
     }
 

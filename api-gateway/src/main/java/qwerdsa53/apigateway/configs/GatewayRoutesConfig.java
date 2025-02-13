@@ -17,6 +17,9 @@ public class GatewayRoutesConfig {
     @Value("${feed.service.uri}")
     private String feedServiceUri;
 
+    @Value("${mail.service.uri}")
+    private String mailServiceUri;
+
     @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
@@ -26,6 +29,8 @@ public class GatewayRoutesConfig {
                         .uri(postsServiceUri))
                 .route("feed-service", r -> r.path("/api/v1/feed/**")
                         .uri(feedServiceUri))
+                .route("mail-service", r -> r.path("/api/v1/mail/**")
+                        .uri(mailServiceUri))
                 .build();
     }
 }

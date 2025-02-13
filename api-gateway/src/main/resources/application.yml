@@ -20,4 +20,7 @@ posts:
 feed:
   service:
     uri: ${FEED_SERVICE_URI}
+mail:
+  service:
+    uri: ${MAIL_SERVICE_URI}
 debug: true

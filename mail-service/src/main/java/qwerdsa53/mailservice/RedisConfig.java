@@ -45,17 +45,16 @@ public class RedisConfig {
 
     @Bean
     @DependsOn("uuidConnectionFactory")
-    public RedisTemplate<String, Long> uuidRedisTemplate(LettuceConnectionFactory uuidConnectionFactory) {
-        RedisTemplate<String, Long> template = new RedisTemplate<>();
+    public RedisTemplate<String, String> uuidRedisTemplate(LettuceConnectionFactory uuidConnectionFactory) {
+        RedisTemplate<String, String> template = new RedisTemplate<>();
         template.setConnectionFactory(uuidConnectionFactory);
         template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new GenericToStringSerializer<>(Long.class));
+        template.setValueSerializer(new StringRedisSerializer());
         return template;
     }
 
     private String getRedisEnv() {
         String redisHost = System.getenv("REDIS_HOST");
-        log.error("Redis host: {}", redisHost);
         if (redisHost == null) {
             throw new IllegalStateException("REDIS_HOST environment variable is not set");
         }

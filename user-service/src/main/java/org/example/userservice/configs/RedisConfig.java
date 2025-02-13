@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
@@ -67,6 +68,25 @@ public class RedisConfig {
         return template;
     }
 
+    @Bean
+    public LettuceConnectionFactory uuidConnectionFactory() {
+        String redisHost = getRedisEnv();
+        RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
+        configuration.setHostName(redisHost);
+        configuration.setPort(6379);
+        configuration.setDatabase(2);
+        return new LettuceConnectionFactory(configuration);
+    }
+
+    @Bean
+    @DependsOn("uuidConnectionFactory")
+    public RedisTemplate<String, String> uuidRedisTemplate(LettuceConnectionFactory uuidConnectionFactory) {
+        RedisTemplate<String, String> template = new RedisTemplate<>();
+        template.setConnectionFactory(uuidConnectionFactory);
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new StringRedisSerializer());
+        return template;
+    }
 
     private String getRedisEnv() {
         String redisHost = System.getenv("REDIS_HOST");
