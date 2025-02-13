@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.userservice.model.dto.UserDto;
 import org.example.userservice.services.UserService;
-import org.example.userservice.utiles.JwtUtil;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/user")
 @AllArgsConstructor
 public class UserController {
-    private final JwtUtil jwtUtil;
     private final UserService userService;
 
 
@@ -25,8 +23,13 @@ public class UserController {
      * - status 400 with an error message in case of invalid input or other issues
      */
     @GetMapping
-    public UserDto getUserInfo(@RequestHeader("Authorization") String authorizationHeader) {
+    public UserDto getCurrentUserInfo(@RequestHeader("Authorization") String authorizationHeader) {
         return userService.getUserInfo(authorizationHeader);
+    }
+
+    @GetMapping("/{id}")
+    public UserDto getUserInfo(@PathVariable("id") Long id) {
+        return userService.getUserById(id);
     }
 
     @PutMapping

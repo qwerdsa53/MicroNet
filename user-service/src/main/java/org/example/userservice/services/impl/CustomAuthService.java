@@ -20,7 +20,7 @@ public class CustomAuthService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new BadCredentialsException("Invalid credentials");
+            throw new BadCredentialsException("Wrong password");
         }
         return user;
     }

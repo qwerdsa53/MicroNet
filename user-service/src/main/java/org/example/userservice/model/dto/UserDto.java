@@ -34,7 +34,7 @@ public class UserDto {
     @Size(max = 255, message = "Birthday length must be smaller than 255 symbols.", groups = {OnCreate.class, OnUpdate.class})
     private LocalDate birthday;
 
-    @Size(max = 1500, message = "Birthday length must be smaller than 1500 symbols.", groups = {OnCreate.class, OnUpdate.class})
+    @Size(max = 1500, message = "Description length must be smaller than 1500 symbols.", groups = {OnCreate.class, OnUpdate.class})
     private String description;
 
     @NotNull(message = "Password must not be null", groups = {OnCreate.class})

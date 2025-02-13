@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.userservice.exceptions.UserAlreadyExistException;
 import org.example.userservice.exceptions.UserNotFoundException;
 import org.example.userservice.model.Role;
 import org.example.userservice.model.User;
@@ -11,6 +12,8 @@ import org.example.userservice.model.dto.UserDto;
 import org.example.userservice.repo.UserRepository;
 import org.example.userservice.services.UserService;
 import org.example.userservice.utiles.JwtUtil;
+import org.hibernate.exception.JDBCConnectionException;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -29,7 +32,7 @@ public class UserServiceImpl implements UserService {
 
     @Async
     @Transactional
-    public void registerUser(UserDto userDto) {
+    public void registerUser(@NotNull UserDto userDto) {
         log.info("Executing in thread: {}", Thread.currentThread().getName());
 
         User user = User.builder()
@@ -41,15 +44,23 @@ public class UserServiceImpl implements UserService {
                 .description(userDto.getDescription())
                 .enabled(false)
                 .build();
-
-        log.error("User: {}", user);
         try {
             userRepository.save(user);
+            log.info("User: {} registered", user.getUsername());
         } catch (DataIntegrityViolationException e) {
-            e.printStackTrace();
-            throw new IllegalArgumentException("Username already exists");
+            if (e.getCause() instanceof org.hibernate.exception.ConstraintViolationException) {
+                log.error("Error while registering new user {}. Email already exists. Exception message: {}",
+                        userDto.getUsername(), e.getMessage(), e);
+                throw new UserAlreadyExistException(String.format("User %s already exists", userDto.getUsername()));
+            }
+            log.error("Data integrity error while saving user {}: {}", user.getUsername(), e.getMessage(), e);
+            throw new RuntimeException("Database constraint violation", e);
+        } catch (JDBCConnectionException e) {
+            log.error("Database connection lost while saving user {}: {}", user.getUsername(), e.getMessage(), e);
+            throw new RuntimeException("Database connection error", e);
         } catch (Exception e) {
-            throw new RuntimeException("Error during registration process: " + e.getMessage(), e);
+            log.error("Unexpected error while saving user {}: {}", user.getUsername(), e.getMessage(), e);
+            throw new RuntimeException("Unexpected error", e);
         }
     }
 
@@ -59,18 +70,11 @@ public class UserServiceImpl implements UserService {
     }
 
     public UserDto getUserById(Long id) {
-        try {
-            UserDto userDto = userRepository.findById(id)
-                    .map(this::convertToDto)
-                    .orElseThrow(() -> new UserNotFoundException("user not found"));
-            log.info("User fetched from database: {}", id);
-            return userDto;
-        } catch (UserNotFoundException e) {
-            throw new UserNotFoundException("user not found");
-        } catch (Exception e) {
-            log.error("Exception message: {}", e.getMessage());
-        }
-        return null;
+        UserDto userDto = userRepository.findById(id)
+                .map(this::convertToDto)
+                .orElseThrow(() -> new UserNotFoundException("user not found"));
+        log.info("User fetched from database: {}", id);
+        return userDto;
     }
 
 
@@ -110,7 +114,8 @@ public class UserServiceImpl implements UserService {
     }
 
     public User findUserByEmail(String email) {
-        return userRepository.findByEmail(email);
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
 
     private boolean hasChanges(User existingUser, UserDto userDto) {
@@ -134,7 +139,7 @@ public class UserServiceImpl implements UserService {
         return jwtUtil.extractUserId(token);
     }
 
-    private UserDto convertToDto(User user) {
+    public UserDto convertToDto(User user) {
         return UserDto.builder()
                 .id(user.getId())
                 .username(user.getUsername())

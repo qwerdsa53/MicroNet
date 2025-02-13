@@ -13,7 +13,6 @@ import org.example.userservice.services.BlackListService;
 import org.example.userservice.services.UserService;
 import org.example.userservice.services.impl.CustomAuthService;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -30,6 +29,7 @@ public class AuthController {
 
 
     @PostMapping("/register")
+    @ResponseStatus(value = HttpStatus.CREATED)
     public JwtResponse registerUser(@RequestBody UserDto userDto) {
         userService.registerUser(userDto);
         User user = authService.authenticate(userDto.getUsername(), userDto.getRawPassword());
@@ -46,20 +46,10 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestHeader("Authorization") String authorizationHeader) {
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.substring(7);
-
-            long remainingTime = jwtTokenProvider.getRemainingTimeFromToken(token);
-
-            if (remainingTime > 0) {
-                blacklistService.addToBlacklist(token, remainingTime);
-                return ResponseEntity.status(HttpStatus.OK).body("Logged out successfully");
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token has already expired");
-            }
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid token");
-        }
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
+    public void logout(@RequestHeader("Authorization") String authorizationHeader) {
+        String token = authorizationHeader.substring(7);
+        long remainingTime = jwtTokenProvider.getRemainingTimeFromToken(token);
+        blacklistService.addToBlacklist(token, remainingTime);
     }
 }

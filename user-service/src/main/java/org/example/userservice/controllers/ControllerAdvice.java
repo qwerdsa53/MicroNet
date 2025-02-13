@@ -2,9 +2,13 @@ package org.example.userservice.controllers;
 
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.example.userservice.exceptions.UserAlreadyExistException;
+import org.example.userservice.exceptions.UserNotFoundException;
 import org.example.userservice.model.ExceptionBody;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -47,6 +51,30 @@ public class ControllerAdvice {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ExceptionBody handleAuthenticationException(AuthenticationException e) {
         return new ExceptionBody("Authentication failed");
+    }
+
+    @ExceptionHandler(UserAlreadyExistException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ExceptionBody handleUserAlreadyExistException(UserAlreadyExistException e) {
+        return new ExceptionBody(e.getMessage());
+    }
+
+    @ExceptionHandler(UsernameNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ExceptionBody handleUsernameNotFoundException(UsernameNotFoundException e) {
+        return new ExceptionBody(e.getMessage());
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ExceptionBody handleUserNotFoundException(UserNotFoundException e) {
+        return new ExceptionBody(e.getMessage());
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ExceptionBody handleBadCredentialsException(BadCredentialsException e) {
+        return new ExceptionBody(e.getMessage());
     }
 
 

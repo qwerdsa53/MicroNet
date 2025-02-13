@@ -8,6 +8,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.example.userservice.model.Role;
 import org.example.userservice.model.User;
+import org.example.userservice.services.impl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -20,11 +21,16 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 public class JwtTokenProvider {
+    private final UserServiceImpl userServiceImpl;
     @Value("${jwt.secret}")
     private String secret;
     private Key jwtSecret;
 
     private final int JWT_EXPIRATION_MS = 86400000; // 1 day
+
+    public JwtTokenProvider(UserServiceImpl userServiceImpl) {
+        this.userServiceImpl = userServiceImpl;
+    }
 
     @PostConstruct
     public void init() {
