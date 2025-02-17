@@ -21,4 +21,6 @@ server:
   port: 8082
 jwt:
   secret: ${SECRET}
+mail-service:
+  uri: ${MAIL_SERVICE_URI}
 debug: true

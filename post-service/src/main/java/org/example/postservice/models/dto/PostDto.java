@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -17,7 +18,9 @@ public class PostDto {
     private Long userId;
     private String title;
     private String text;
-    private List<String> tags;
+    private int cntLikes;
+    private List<String> tags = new ArrayList<>();
+    private List<String> files = new ArrayList<>();
     private LocalDateTime createdAt;
 }
 

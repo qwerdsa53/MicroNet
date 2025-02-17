@@ -60,4 +60,9 @@ public class User {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
+
+    public User(Long id) {
+        this.id = id;
+    }
 }

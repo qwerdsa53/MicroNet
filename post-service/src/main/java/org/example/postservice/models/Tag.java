@@ -15,6 +15,10 @@ import java.util.List;
 @Table(name = "tags")
 public class Tag {
 
+    public Tag(String name) {
+        this.name = name;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

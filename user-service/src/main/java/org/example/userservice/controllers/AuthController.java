@@ -13,6 +13,7 @@ import org.example.userservice.model.dto.UserDto;
 import org.example.userservice.services.BlackListService;
 import org.example.userservice.services.UserService;
 import org.example.userservice.services.impl.CustomAuthService;
+import org.example.userservice.services.impl.MailServiceClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +28,7 @@ public class AuthController {
     private final JwtTokenProvider jwtTokenProvider;
     private final BlackListService blacklistService;
     private final UserService userService;
+    private final MailServiceClient mailServiceClient;
 
 
     @PostMapping("/register")
@@ -35,6 +37,11 @@ public class AuthController {
         userService.registerUser(userDto);
         User user = authService.authenticate(userDto.getUsername(), userDto.getRawPassword());
         String token = jwtTokenProvider.generateToken(user);
+//        try {
+//            mailServiceClient.sendEmail(userDto.getEmail());
+//        }catch (Exception e){
+//            log.error(e.getMessage());
+//        }
         return new JwtResponse(user.getId(), user.getUsername(), token);
     }
 
@@ -44,6 +51,13 @@ public class AuthController {
         User user = authService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
         String token = jwtTokenProvider.generateToken(user);
         return new TokenDto(token);
+    }
+
+    @PostMapping("/send/confirm")
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
+    public void sendConfirmEmail(@RequestHeader("Authorization") String authorizationHeader) {
+        String email =  userService.getUserInfo(authorizationHeader).getEmail();
+        mailServiceClient.sendEmail(email);
     }
 
     @PostMapping("/confirm")

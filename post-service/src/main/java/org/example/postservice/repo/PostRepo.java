@@ -29,4 +29,15 @@ public interface PostRepo extends JpaRepository<Post, Long> {
     Page<Post> findAll(Pageable pageable);
 
     Page<Post> findByTagsIn(List<Tag> tags, Pageable pageable);
+
+
+    @Modifying
+    @Query(value = """
+            INSERT INTO posts_images (post_id, image)
+            VALUES (:id, :fileName)
+            """, nativeQuery = true)
+    void addImage(
+            @Param("id") Long id,
+            @Param("fileName") String fileName
+    );
 }
