@@ -1,10 +1,15 @@
 package org.example.userservice.services;
 
+import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.example.userservice.model.User;
+import org.example.userservice.model.dto.JwtResponse;
 import org.example.userservice.model.dto.UserDto;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 public interface UserService {
-    void registerUser(UserDto userDto);
+    JwtResponse registerUser(UserDto userDto, List<MultipartFile> profilePictures) throws FileUploadException;
 
     UserDto getUserInfo(String authorizationHeader);
 
@@ -14,7 +19,7 @@ public interface UserService {
 
     void activateUser(String username);
 
-    UserDto updateUser(String authorizationHeader, UserDto userDto);
+    UserDto updateUser(String authorizationHeader, UserDto userDto, List<MultipartFile> profilePictures) throws FileUploadException;
 
     void updatePassword(Long userId, String newPassword);
 

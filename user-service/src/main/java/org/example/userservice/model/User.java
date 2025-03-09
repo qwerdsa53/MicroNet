@@ -9,6 +9,9 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -38,6 +41,15 @@ public class User {
     @CollectionTable(name = "users_roles")
     @Enumerated(value = EnumType.STRING)
     private Set<Role> roles;
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "user_friends", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "friend_id")
+    private Set<Long> friends = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.ALL}, orphanRemoval = true)
+    private List<Image> profilePictures = new ArrayList<>();
+
 
     @Column(nullable = false)
     private LocalDateTime createdAt;

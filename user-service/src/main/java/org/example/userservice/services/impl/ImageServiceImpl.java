@@ -1,4 +1,4 @@
-package org.example.postservice.services.impl;
+package org.example.userservice.services.impl;
 
 import io.minio.*;
 import io.minio.errors.MinioException;
@@ -6,11 +6,12 @@ import io.minio.messages.Item;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.example.postservice.exceptions.FileUploadException;
-import org.example.postservice.props.MinioProperties;
-import org.example.postservice.services.FileService;
+
+import org.apache.tomcat.util.http.fileupload.FileUploadException;
+import org.example.userservice.services.ImageService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import props.MinioProperties;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,12 +24,12 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class FileServiceImpl implements FileService {
+public class ImageServiceImpl implements ImageService {
     private final MinioClient minioClient;
     private final MinioProperties minioProperties;
 
     @Override
-    public String upload(MultipartFile file, Long userId, Long posId) {
+    public String upload(MultipartFile file, Long userId) throws FileUploadException {
         try {
             createBucket();
         } catch (Exception e) {
@@ -38,7 +39,7 @@ public class FileServiceImpl implements FileService {
         if (file.isEmpty() || file.getOriginalFilename() == null) {
             throw new FileUploadException("File must have name.");
         }
-        String filename = generateFileName(file, userId, posId);
+        String filename = generateFileName(file, userId);
         InputStream inputStream;
         try {
             inputStream = file.getInputStream();
@@ -69,13 +70,12 @@ public class FileServiceImpl implements FileService {
 
 
     @Override
-    public void deleteFolder(String url) {
+    public void deleteFolder(String userId) {
         try {
-            String folderPath = extractFolderPath(url, minioProperties.getBucket());
             Iterable<Result<Item>> results = minioClient.listObjects(
                     ListObjectsArgs.builder()
                             .bucket(minioProperties.getBucket())
-                            .prefix(folderPath)
+                            .prefix(userId+"/")
                             .recursive(true)
                             .build()
             );
@@ -115,16 +115,15 @@ public class FileServiceImpl implements FileService {
     }
 
     @SneakyThrows
-    private String generateFileName(MultipartFile file, Long userId, Long postId) {
+    private String generateFileName(MultipartFile file, Long userId) {
         String extension = getExtension(file);
-        StringBuilder fileName = new StringBuilder();
+        StringBuffer fileName = new StringBuffer();
         fileName.append(userId)
-                .append("/")
-                .append(postId)
                 .append("/")
                 .append(UUID.nameUUIDFromBytes(file.getBytes()))
                 .append(".")
                 .append(extension);
+
         return fileName.toString();
     }
 

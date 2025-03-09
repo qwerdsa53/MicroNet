@@ -3,23 +3,40 @@ package org.example.userservice.services.impl;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.http.fileupload.FileUploadException;
+import org.example.userservice.JwtTokenProvider;
 import org.example.userservice.exceptions.UserAlreadyExistException;
 import org.example.userservice.exceptions.UserNotFoundException;
+import org.example.userservice.model.Image;
 import org.example.userservice.model.Role;
 import org.example.userservice.model.User;
+import org.example.userservice.model.dto.FriendDto;
+import org.example.userservice.model.dto.JwtResponse;
 import org.example.userservice.model.dto.UserDto;
+import org.example.userservice.repo.ImageRepo;
 import org.example.userservice.repo.UserRepository;
+import org.example.userservice.services.ImageService;
 import org.example.userservice.services.UserService;
 import org.example.userservice.utiles.JwtUtil;
 import org.hibernate.exception.JDBCConnectionException;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -28,26 +45,48 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final TokenServiceImpl tokenService;
+    private final ImageService imageService;
+    private final MailServiceClient mailServiceClient;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final ImageRepo imageRepo;
     private final JwtUtil jwtUtil;
 
 
     @Async
     @Transactional
-    public void registerUser(@NotNull UserDto userDto) {
+    @SneakyThrows
+    public JwtResponse registerUser(
+            @NotNull UserDto userDto,
+            List<MultipartFile> profilePictures
+    ) throws FileUploadException {
         log.info("Executing in thread: {}", Thread.currentThread().getName());
 
         User user = User.builder()
                 .username(userDto.getUsername())
                 .password(passwordEncoder.encode(userDto.getRawPassword()))
                 .email(userDto.getEmail())
+                .profilePictures(new ArrayList<>())
                 .roles(Set.of(Role.ROLE_USER))
                 .birthday(userDto.getBirthday())
                 .description(userDto.getDescription())
                 .enabled(false)
                 .build();
+
+
         try {
-            userRepository.save(user);
+            User savedUser = userRepository.save(user);
             log.info("User: {} registered", user.getUsername());
+            addProfilePictures(profilePictures, savedUser);
+
+            String token = jwtTokenProvider.generateToken(user);
+            sendWelcomeEmailAsync(savedUser.getEmail());
+            return new JwtResponse(
+                    savedUser.getId(),
+                    savedUser.getUsername(),
+                    convertToDto(savedUser.getProfilePictures()),
+                    token
+            );
+
         } catch (DataIntegrityViolationException e) {
             if (e.getCause() instanceof org.hibernate.exception.ConstraintViolationException) {
                 log.error("Error while registering new user {}. Email already exists. Exception message: {}",
@@ -66,7 +105,7 @@ public class UserServiceImpl implements UserService {
     }
 
     public UserDto getUserInfo(String authorizationHeader) {
-        Long id = getUserId(authorizationHeader);
+        Long id = extractUserId(authorizationHeader);
         return getUserById(id);
     }
 
@@ -92,23 +131,27 @@ public class UserServiceImpl implements UserService {
         tokenService.deleteToken(token);
     }
 
-    public UserDto updateUser(String authorizationHeader, UserDto userDto) {
-        userDto.setId(getUserId(authorizationHeader));
+    public UserDto updateUser(
+            String authorizationHeader,
+            UserDto userDto,
+            List<MultipartFile> profilePictures
+    ) throws FileUploadException {
+        userDto.setId(extractUserId(authorizationHeader));
         User existingUser = userRepository.findById(userDto.getId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!hasChanges(existingUser, userDto)) {
-            return null;
-        }
         existingUser.setUsername(userDto.getUsername());
         existingUser.setEmail(userDto.getEmail());
         existingUser.setDescription(userDto.getDescription());
         existingUser.setBirthday(userDto.getBirthday());
         existingUser.setEnabled(userDto.isEnabled());
+        imageRepo.deleteAll(existingUser.getProfilePictures());
+        existingUser.getProfilePictures().clear();
+        imageService.deleteFolder(existingUser.getId().toString());
 
+        addProfilePictures(profilePictures, existingUser);
         userRepository.save(existingUser);
-
-        return userDto;
+        return convertToDto(existingUser);
     }
 
     public void updatePassword(Long userId, String newPassword) {
@@ -121,6 +164,17 @@ public class UserServiceImpl implements UserService {
     public User findUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
+    }
+
+    @Transactional()
+    public Page<FriendDto> getFriends(Long userId, int page, int size) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("username"));
+
+        return userRepository.findFriendsByUserId(user.getFriends(), pageable)
+                .map(friend -> new FriendDto(friend.getId(), friend.getUsername(), "friend.getAvatarUrl()"));
     }
 
     private boolean hasChanges(User existingUser, UserDto userDto) {
@@ -139,7 +193,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private Long getUserId(String authorizationHeader) {
+    private Long extractUserId(String authorizationHeader) {
         String token = extractToken(authorizationHeader);
         return jwtUtil.extractUserId(token);
     }
@@ -150,7 +204,40 @@ public class UserServiceImpl implements UserService {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .enabled(user.isEnabled())
+                .profilePictures(user.getProfilePictures().stream().map(Image::getUrl).toList())
                 .build();
     }
 
+    public List<String> convertToDto(List<Image> images){
+        return images.stream().map(Image::getUrl).toList();
+    }
+
+    private void sendWelcomeEmailAsync(String email) {
+        CompletableFuture.runAsync(() -> {
+            try {
+                mailServiceClient.sendEmail(email);
+            } catch (Exception e) {
+                log.error("Ошибка отправки email: {}", e.getMessage());
+            }
+        });
+    }
+
+    private void addProfilePictures(
+            List<MultipartFile> profilePictures,
+            User user
+    ) throws FileUploadException {
+        if (profilePictures != null && !profilePictures.isEmpty()) {
+            for (MultipartFile picture : profilePictures) {
+                String url = imageService.upload(picture, user.getId());
+                user.getProfilePictures().add(new Image(
+                        url,
+                        picture.getOriginalFilename(),
+                        picture.getContentType(),
+                        picture.getSize(),
+                        LocalDateTime.now(),
+                        user
+                ));
+            }
+        }
+    }
 }

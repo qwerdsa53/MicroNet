@@ -11,6 +11,7 @@ import org.example.userservice.model.dto.validation.OnCreate;
 import org.example.userservice.model.dto.validation.OnUpdate;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Builder
 @Data
@@ -36,6 +37,8 @@ public class UserDto {
 
     @Size(max = 1500, message = "Description length must be smaller than 1500 symbols.", groups = {OnCreate.class, OnUpdate.class})
     private String description;
+
+    private List<String> profilePictures;
 
     @NotNull(message = "Password must not be null", groups = {OnCreate.class})
     private String rawPassword;

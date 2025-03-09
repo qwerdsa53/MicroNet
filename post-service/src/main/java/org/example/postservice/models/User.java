@@ -1,5 +1,6 @@
 package org.example.postservice.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,6 +9,9 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -38,17 +42,27 @@ public class User {
     @Enumerated(value = EnumType.STRING)
     private Set<Role> roles;
 
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "user_friends", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "friend_id")
+    private Set<Long> friends = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.ALL}, orphanRemoval = true)
+    private List<Image> profilePictures = new ArrayList<>();
+
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
-
     @Column()
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate birthday;
 
     @Column()
     private String description;
+
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {
@@ -65,4 +79,5 @@ public class User {
     public User(Long id) {
         this.id = id;
     }
+
 }

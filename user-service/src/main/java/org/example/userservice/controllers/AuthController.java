@@ -4,6 +4,7 @@ package org.example.userservice.controllers;
 import jakarta.websocket.server.PathParam;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.example.userservice.JwtTokenProvider;
 import org.example.userservice.model.User;
 import org.example.userservice.model.dto.JwtResponse;
@@ -15,7 +16,13 @@ import org.example.userservice.services.UserService;
 import org.example.userservice.services.impl.CustomAuthService;
 import org.example.userservice.services.impl.MailServiceClient;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 
 @RestController
@@ -31,18 +38,13 @@ public class AuthController {
     private final MailServiceClient mailServiceClient;
 
 
-    @PostMapping("/register")
+    @PostMapping(path = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(value = HttpStatus.CREATED)
-    public JwtResponse registerUser(@RequestBody UserDto userDto) {
-        userService.registerUser(userDto);
-        User user = authService.authenticate(userDto.getUsername(), userDto.getRawPassword());
-        String token = jwtTokenProvider.generateToken(user);
-//        try {
-//            mailServiceClient.sendEmail(userDto.getEmail());
-//        }catch (Exception e){
-//            log.error(e.getMessage());
-//        }
-        return new JwtResponse(user.getId(), user.getUsername(), token);
+    public JwtResponse registerUser(
+            @RequestPart(name = "files", required = false) List<MultipartFile> profilePictures,
+            @RequestPart(name = "data") UserDto userDto
+    ) throws FileUploadException {
+        return userService.registerUser(userDto, profilePictures);
     }
 
 

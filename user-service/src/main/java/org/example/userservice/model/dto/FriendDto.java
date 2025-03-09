@@ -2,14 +2,13 @@ package org.example.userservice.model.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import java.util.List;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
-public class JwtResponse {
-    private Long userId;
+@NoArgsConstructor
+public class FriendDto {
+    private Long id;
     private String username;
-    private List<String> avatarUrl;
-    private String accessToken;
+    private String avatarUrl;
 }
