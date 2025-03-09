@@ -2,6 +2,7 @@ package org.example.postservice.controllers;
 
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.example.postservice.exceptions.*;
 import org.example.postservice.models.ExceptionBody;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
@@ -49,12 +50,53 @@ public class ControllerAdvice {
         return new ExceptionBody("Authentication failed");
     }
 
+    @ExceptionHandler(GetPostException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ExceptionBody handleGetPostException(GetPostException e) {
+        log.error(Arrays.toString(e.getStackTrace()));
+        return new ExceptionBody(e.getMessage());
+    }
+
+    @ExceptionHandler(PostSaveException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ExceptionBody handlePostSaveException(PostSaveException e) {
+        log.error(Arrays.toString(e.getStackTrace()));
+        return new ExceptionBody(e.getMessage());
+    }
+
+    @ExceptionHandler(PostNotFoundException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ExceptionBody handlePostNotFoundException(PostNotFoundException e) {
+        log.error(Arrays.toString(e.getStackTrace()));
+        return new ExceptionBody(e.getMessage());
+    }
+
+    @ExceptionHandler(PostDeleteException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ExceptionBody handlePostDeleteException(PostDeleteException e) {
+        log.error(Arrays.toString(e.getStackTrace()));
+        return new ExceptionBody(e.getMessage());
+    }
+
+    @ExceptionHandler(PostLikeException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ExceptionBody handlePostLikeException(PostLikeException e) {
+        log.error(Arrays.toString(e.getStackTrace()));
+        return new ExceptionBody(e.getMessage());
+    }
+
+    @ExceptionHandler(FeedException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ExceptionBody handleFeedException(FeedException e) {
+        log.error(Arrays.toString(e.getStackTrace()));
+        return new ExceptionBody(e.getMessage());
+    }
+
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ExceptionBody handleException(Exception e) {
         log.error(Arrays.toString(e.getStackTrace()));
-        e.printStackTrace();
         return new ExceptionBody("Internal error");
     }
 }

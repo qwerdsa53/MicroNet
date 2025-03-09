@@ -12,9 +12,9 @@ public interface PostService {
 
     PostDto addPostByUserId(PostDto postDto, Long userId, List<MultipartFile> files);
 
-    boolean updatePost(PostDto postDto, Long userId, List<MultipartFile> files);
+    PostDto updatePost(PostDto postDto, Long userId, List<MultipartFile> files);
 
-    boolean deletePost(Long postId, Long userId);
+    void deletePost(Long postId, Long userId);
 
     Page<PostDto> getAllPosts(int page, int size, List<String> tags);
 }

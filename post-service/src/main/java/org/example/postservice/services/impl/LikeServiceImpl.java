@@ -2,6 +2,8 @@ package org.example.postservice.services.impl;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.example.postservice.exceptions.PostLikeException;
+import org.example.postservice.exceptions.PostNotFoundException;
 import org.example.postservice.models.Like;
 import org.example.postservice.models.Post;
 import org.example.postservice.models.User;
@@ -17,7 +19,6 @@ import java.time.LocalDateTime;
 public class LikeServiceImpl implements LikeService {
     private final LikeRepo likeRepo;
     private final PostRepo postRepo;
-//    private final UserServiceClient userServiceClient;
 
 
     @Override
@@ -25,12 +26,16 @@ public class LikeServiceImpl implements LikeService {
     public void likePost(Long userId, Long postId) {
         User user = new User(userId);
         Post post = postRepo.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+                .orElseThrow(() -> new PostNotFoundException("Post not found"));
 
         if (likeRepo.existsByUserIdAndPostId(userId, postId)) {
-            throw new IllegalArgumentException("User already liked this post");
+            throw new PostLikeException("User already liked this post");
         }
-        likeRepo.save(new Like(user, post, LocalDateTime.now()));
+        try {
+            likeRepo.save(new Like(user, post, LocalDateTime.now()));
+        } catch (Exception e) {
+            throw new PostLikeException("Error while liking post");
+        }
     }
 
     @Override
@@ -38,11 +43,15 @@ public class LikeServiceImpl implements LikeService {
     public void removeLikeFromPost(Long userId, Long postId) {
 
         Post post = postRepo.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+                .orElseThrow(() -> new PostNotFoundException("Post not found"));
 
         if (!likeRepo.existsByUserIdAndPostId(userId, postId)) {
-            throw new IllegalArgumentException("User have not like this post");
+            throw new PostLikeException("User have not like this post");
         }
-        likeRepo.deleteByUserIdAndPostId(userId, postId);
+        try {
+            likeRepo.deleteByUserIdAndPostId(userId, postId);
+        } catch (Exception e) {
+            throw new PostLikeException("Post like exception");
+        }
     }
 }

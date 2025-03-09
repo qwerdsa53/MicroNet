@@ -112,6 +112,12 @@
             <version>8.4.5</version>
         </dependency>
 
+        <!--        <dependency>-->
+        <!--            <groupId>org.liquibase</groupId>-->
+        <!--            <artifactId>liquibase-core</artifactId>-->
+        <!--        </dependency>-->
+
+
     </dependencies>
 
     <build>

@@ -41,12 +41,7 @@ public class Post {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Like> likes = new HashSet<>();
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "post_files",
-            joinColumns = @JoinColumn(name = "post_id"),
-            inverseJoinColumns = @JoinColumn(name = "file_id")
-    )
+    @OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<File> files = new ArrayList<>();
 
     @Column
@@ -60,4 +55,19 @@ public class Post {
 
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    @Override
+    public String toString() {
+        return "Post{" +
+                "id=" + id +
+                ", user=" + user.getId() +
+                ", tags=" + tags.stream().map(Tag::getName) +
+                ", likes=" + likes +
+                ", files=" + files.stream().map(File::getUrl) +
+                ", title='" + title + '\'' +
+                ", text='" + text + '\'' +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
+    }
 }
