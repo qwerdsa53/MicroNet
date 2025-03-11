@@ -12,7 +12,6 @@ import org.example.userservice.exceptions.UserNotFoundException;
 import org.example.userservice.model.Image;
 import org.example.userservice.model.Role;
 import org.example.userservice.model.User;
-import org.example.userservice.model.dto.FriendDto;
 import org.example.userservice.model.dto.JwtResponse;
 import org.example.userservice.model.dto.UserDto;
 import org.example.userservice.repo.ImageRepo;
@@ -20,13 +19,7 @@ import org.example.userservice.repo.UserRepository;
 import org.example.userservice.services.ImageService;
 import org.example.userservice.services.UserService;
 import org.example.userservice.utiles.JwtUtil;
-import org.hibernate.exception.JDBCConnectionException;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -58,8 +51,12 @@ public class UserServiceImpl implements UserService {
     public JwtResponse registerUser(
             @NotNull UserDto userDto,
             List<MultipartFile> profilePictures
-    ) throws FileUploadException {
+    ) {
         log.info("Executing in thread: {}", Thread.currentThread().getName());
+
+        if (userRepository.existsByEmail(userDto.getEmail())) {
+            throw new UserAlreadyExistException(String.format("User %s already exists", userDto.getEmail()));
+        }
 
         User user = User.builder()
                 .username(userDto.getUsername())
@@ -73,35 +70,18 @@ public class UserServiceImpl implements UserService {
                 .build();
 
 
-        try {
-            User savedUser = userRepository.save(user);
-            log.info("User: {} registered", user.getUsername());
-            addProfilePictures(profilePictures, savedUser);
+        User savedUser = userRepository.save(user);
+        log.info("User: {} registered", user.getUsername());
+        addProfilePictures(profilePictures, savedUser);
 
-            String token = jwtTokenProvider.generateToken(user);
-            sendWelcomeEmailAsync(savedUser.getEmail());
-            return new JwtResponse(
-                    savedUser.getId(),
-                    savedUser.getUsername(),
-                    convertToDto(savedUser.getProfilePictures()),
-                    token
-            );
-
-        } catch (DataIntegrityViolationException e) {
-            if (e.getCause() instanceof org.hibernate.exception.ConstraintViolationException) {
-                log.error("Error while registering new user {}. Email already exists. Exception message: {}",
-                        userDto.getUsername(), e.getMessage(), e);
-                throw new UserAlreadyExistException(String.format("User %s already exists", userDto.getUsername()));
-            }
-            log.error("Data integrity error while saving user {}: {}", user.getUsername(), e.getMessage(), e);
-            throw new RuntimeException("Database constraint violation", e);
-        } catch (JDBCConnectionException e) {
-            log.error("Database connection lost while saving user {}: {}", user.getUsername(), e.getMessage(), e);
-            throw new RuntimeException("Database connection error", e);
-        } catch (Exception e) {
-            log.error("Unexpected error while saving user {}: {}", user.getUsername(), e.getMessage(), e);
-            throw new RuntimeException("Unexpected error", e);
-        }
+        String token = jwtTokenProvider.generateToken(user);
+//            sendWelcomeEmailAsync(savedUser.getEmail());
+        return new JwtResponse(
+                savedUser.getId(),
+                savedUser.getUsername(),
+                convertToDto(savedUser.getProfilePictures()),
+                token
+        );
     }
 
     public UserDto getUserInfo(String authorizationHeader) {
@@ -118,14 +98,17 @@ public class UserServiceImpl implements UserService {
     }
 
 
+    @Transactional
     public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+        User user = userRepository.findUserWithLock(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        userRepository.delete(user);
     }
 
     @Transactional
-    public void activateUser(String token) {
+    public synchronized void activateUser(String token) {
         String email = tokenService.getUserEmailByToken(token);
-        if(userRepository.enableUserByEmail(email) == 0){
+        if (userRepository.enableUserByEmail(email) == 0) {
             throw new UserNotFoundException("User not found");
         }
         tokenService.deleteToken(token);
@@ -137,7 +120,7 @@ public class UserServiceImpl implements UserService {
             List<MultipartFile> profilePictures
     ) throws FileUploadException {
         userDto.setId(extractUserId(authorizationHeader));
-        User existingUser = userRepository.findById(userDto.getId())
+        User existingUser = userRepository.findUserWithLock(userDto.getId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         existingUser.setUsername(userDto.getUsername());
@@ -155,7 +138,7 @@ public class UserServiceImpl implements UserService {
     }
 
     public void updatePassword(Long userId, String newPassword) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findUserWithLock(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
         user.setPassword(newPassword);
         userRepository.save(user);
@@ -166,17 +149,6 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
 
-    @Transactional()
-    public Page<FriendDto> getFriends(Long userId, int page, int size) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by("username"));
-
-        return userRepository.findFriendsByUserId(user.getFriends(), pageable)
-                .map(friend -> new FriendDto(friend.getId(), friend.getUsername(), "friend.getAvatarUrl()"));
-    }
-
     private boolean hasChanges(User existingUser, UserDto userDto) {
         return !existingUser.getUsername().equals(userDto.getUsername()) ||
                 !existingUser.getEmail().equals(userDto.getEmail()) ||
@@ -185,17 +157,8 @@ public class UserServiceImpl implements UserService {
                 existingUser.isEnabled() != userDto.isEnabled();
     }
 
-    private String extractToken(String authorizationHeader) {
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            return authorizationHeader.substring(7);
-        } else {
-            throw new IllegalArgumentException("Invalid Authorization header");
-        }
-    }
-
     private Long extractUserId(String authorizationHeader) {
-        String token = extractToken(authorizationHeader);
-        return jwtUtil.extractUserId(token);
+        return jwtUtil.extractUserId(authorizationHeader);
     }
 
     public UserDto convertToDto(User user) {
@@ -208,7 +171,7 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
-    public List<String> convertToDto(List<Image> images){
+    private List<String> convertToDto(List<Image> images) {
         return images.stream().map(Image::getUrl).toList();
     }
 

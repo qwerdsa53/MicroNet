@@ -23,7 +23,8 @@ public class JwtUtil {
                 .getBody();
     }
 
-    public Long extractUserId(String token) {
+    public Long extractUserId(String authorizationHeader) {
+        String token = extractToken(authorizationHeader);
         Claims claims = extractClaims(token);
         Object userId = claims.get("userId");
         if (userId instanceof Integer) {
@@ -32,6 +33,14 @@ public class JwtUtil {
             return (Long) userId;
         }
         return null;
+    }
+
+    private String extractToken(String authorizationHeader) {
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            return authorizationHeader.substring(7);
+        } else {
+            throw new IllegalArgumentException("Invalid Authorization header");
+        }
     }
 
 }

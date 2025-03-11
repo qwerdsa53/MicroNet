@@ -8,8 +8,6 @@ import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.example.userservice.model.Role;
 import org.example.userservice.model.User;
-import org.example.userservice.services.UserService;
-import org.example.userservice.services.impl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 

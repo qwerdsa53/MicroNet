@@ -1,9 +1,11 @@
 package org.example.userservice.repo;
 
+import jakarta.persistence.LockModeType;
 import org.example.userservice.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -26,6 +28,16 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT u FROM User u WHERE u.email = :email")
     Optional<User> findByEmail(@Param("email") String email);
+
+    @Query("SELECT COUNT(u) > 0 FROM User u WHERE u.email = :email")
+    boolean existsByEmail(@Param("email") String email);
+
+    @Query("SELECT u FROM User u WHERE u.id IN :friendIds")
+    Page<User> findFriendRequestsByUserId(@Param("friendIds") Set<Long> friendIds, Pageable pageable);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT u FROM User u WHERE u.id = :userId")
+    Optional<User> findUserWithLock(@Param("userId") Long userId);
 
     @Query("SELECT u FROM User u WHERE u.id IN :friendIds")
     Page<User> findFriendsByUserId(@Param("friendIds") Set<Long> friendIds, Pageable pageable);

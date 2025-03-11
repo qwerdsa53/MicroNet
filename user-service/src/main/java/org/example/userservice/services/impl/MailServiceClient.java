@@ -1,7 +1,6 @@
 package org.example.userservice.services.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.example.userservice.model.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -22,7 +21,7 @@ public class MailServiceClient {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.TEXT_PLAIN);
         headers.set("X-API-KEY", "SECRET");
-        String mailServiceUrl = mailServiceUri+"/api/v1/mail/confirm";
+        String mailServiceUrl = mailServiceUri + "/api/v1/mail/confirm";
         HttpEntity<String> requestEntity = new HttpEntity<>(email, headers);
         restTemplate.exchange(mailServiceUrl, HttpMethod.POST, requestEntity, String.class);
     }

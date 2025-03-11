@@ -3,7 +3,6 @@ package org.example.userservice.controllers;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
-import org.example.userservice.model.dto.JwtResponse;
 import org.example.userservice.model.dto.UserDto;
 import org.example.userservice.services.UserService;
 import org.springframework.http.MediaType;
@@ -44,7 +43,7 @@ public class UserController {
             @RequestHeader("Authorization") String authorizationHeader,
             @RequestPart(name = "files", required = false) List<MultipartFile> profilePictures,
             @RequestPart(name = "data") UserDto userDto
-    ) throws FileUploadException{
+    ) throws FileUploadException {
         return userService.updateUser(authorizationHeader, userDto, profilePictures);
     }
 

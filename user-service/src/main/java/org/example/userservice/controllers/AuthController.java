@@ -20,9 +20,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 
 @RestController
@@ -58,7 +56,7 @@ public class AuthController {
     @PostMapping("/send/confirm")
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void sendConfirmEmail(@RequestHeader("Authorization") String authorizationHeader) {
-        String email =  userService.getUserInfo(authorizationHeader).getEmail();
+        String email = userService.getUserInfo(authorizationHeader).getEmail();
         mailServiceClient.sendEmail(email);
     }
 

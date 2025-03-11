@@ -47,6 +47,11 @@ public class User {
     @Column(name = "friend_id")
     private Set<Long> friends = new HashSet<>();
 
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "friend_requests", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "requester_id")
+    private Set<Long> friendRequests = new HashSet<>();
+
     @OneToMany(mappedBy = "user", cascade = {CascadeType.ALL}, orphanRemoval = true)
     private List<Image> profilePictures = new ArrayList<>();
 

@@ -6,7 +6,6 @@ import io.minio.messages.Item;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.example.userservice.services.ImageService;
 import org.springframework.stereotype.Service;
@@ -53,7 +52,7 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     public void deleteFile(String filePath) {
-        if(filePath.contains("https://") || filePath.contains("http://")){
+        if (filePath.contains("https://") || filePath.contains("http://")) {
             filePath = extractFilePath(filePath, minioProperties.getBucket());
         }
         try {
@@ -75,7 +74,7 @@ public class ImageServiceImpl implements ImageService {
             Iterable<Result<Item>> results = minioClient.listObjects(
                     ListObjectsArgs.builder()
                             .bucket(minioProperties.getBucket())
-                            .prefix(userId+"/")
+                            .prefix(userId + "/")
                             .recursive(true)
                             .build()
             );
@@ -135,6 +134,7 @@ public class ImageServiceImpl implements ImageService {
                 .object(fileName)
                 .build());
     }
+
     private String extractFilePath(String filePath, String bucketName) {
         try {
             URI uri = new URI(filePath);
