@@ -244,8 +244,15 @@ jobs:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/cms
           SPRING_DATASOURCE_USERNAME: ${{ secrets.P_USERNAME }}
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.P_PASSWORD }}
-          REDIS_HOST: localhost
+          REDIS_HOST: ${{ secrets.REDIS_HOST }}
           REDIS_PORT: 6379
+          SECRET: ${{ secrets.SECRET }}
+          MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
+          MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
+          MINIO_URL: ${{ secrets.MINIO_URL }}
+          MINIO_BUCKET: ${{ secrets.MINIO_BUCKET }}
+          MAIL_SERVICE_URI: ${{ secrets.MAIL_SERVICE_URI }}
+
         run: |
           mvn clean install
           mvn test

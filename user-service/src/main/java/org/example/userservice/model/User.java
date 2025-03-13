@@ -48,6 +48,11 @@ public class User {
     private Set<Long> friends = new HashSet<>();
 
     @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "user_blacklisted_user", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "blacklisted_user_id")
+    private Set<Long> userBlackList = new HashSet<>();
+
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "friend_requests", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "requester_id")
     private Set<Long> friendRequests = new HashSet<>();

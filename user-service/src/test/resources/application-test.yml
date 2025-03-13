@@ -3,7 +3,7 @@ spring:
     name: user-service
   config:
     import:
-      - optional:file:user-service/.env[.properties]
+      - optional:classpath:.env.properties
   datasource:
     url: ${P_URL}
     username: ${P_USERNAME}
@@ -19,7 +19,7 @@ server:
 jwt:
   secret: ${SECRET}
 mail-service:
-  uri: ${MAIL_SERVICE_URI}
+  uri: http://localhost:8090
 redis:
   host: ${REDIS_HOST}
 debug: true

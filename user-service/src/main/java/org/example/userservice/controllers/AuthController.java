@@ -11,7 +11,7 @@ import org.example.userservice.model.dto.JwtResponse;
 import org.example.userservice.model.dto.LoginRequestDto;
 import org.example.userservice.model.dto.TokenDto;
 import org.example.userservice.model.dto.UserDto;
-import org.example.userservice.services.BlackListService;
+import org.example.userservice.services.JwtBlackListService;
 import org.example.userservice.services.UserService;
 import org.example.userservice.services.impl.CustomAuthService;
 import org.example.userservice.services.impl.MailServiceClient;
@@ -31,7 +31,7 @@ public class AuthController {
 
     private final CustomAuthService authService;
     private final JwtTokenProvider jwtTokenProvider;
-    private final BlackListService blacklistService;
+    private final JwtBlackListService jwtBlackListService;
     private final UserService userService;
     private final MailServiceClient mailServiceClient;
 
@@ -71,6 +71,6 @@ public class AuthController {
     public void logout(@RequestHeader("Authorization") String authorizationHeader) {
         String token = authorizationHeader.substring(7);
         long remainingTime = jwtTokenProvider.getRemainingTimeFromToken(token);
-        blacklistService.addToBlacklist(token, remainingTime);
+        jwtBlackListService.addToBlacklist(token, remainingTime);
     }
 }

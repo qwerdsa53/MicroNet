@@ -2,6 +2,7 @@ package org.example.userservice.configs;
 
 import lombok.extern.slf4j.Slf4j;
 import org.example.userservice.model.dto.UserDto;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -19,6 +20,9 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 @EnableAutoConfiguration(exclude = {RedisReactiveAutoConfiguration.class})
 public class RedisConfig {
+    @Value("${redis.host}")
+    private String redisHost;
+
     @Primary
     @Bean
     public RedisTemplate<String, Object> redisTemplate(LettuceConnectionFactory jwtConnectionFactory) {
@@ -31,7 +35,6 @@ public class RedisConfig {
 
     @Bean
     public LettuceConnectionFactory jwtConnectionFactory() {
-        String redisHost = getRedisEnv();
         RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
         configuration.setHostName(redisHost);
         configuration.setPort(6379);
@@ -50,7 +53,6 @@ public class RedisConfig {
 
     @Bean
     public LettuceConnectionFactory cacheConnectionFactory() {
-        String redisHost = getRedisEnv();
         RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
         configuration.setHostName(redisHost);
         configuration.setPort(6379);
@@ -70,7 +72,6 @@ public class RedisConfig {
 
     @Bean
     public LettuceConnectionFactory uuidConnectionFactory() {
-        String redisHost = getRedisEnv();
         RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
         configuration.setHostName(redisHost);
         configuration.setPort(6379);
@@ -86,14 +87,6 @@ public class RedisConfig {
         template.setKeySerializer(new StringRedisSerializer());
         template.setValueSerializer(new StringRedisSerializer());
         return template;
-    }
-
-    private String getRedisEnv() {
-        String redisHost = System.getenv("REDIS_HOST");
-        if (redisHost == null) {
-            throw new IllegalStateException("REDIS_HOST environment variable is not set");
-        }
-        return redisHost;
     }
 }
 

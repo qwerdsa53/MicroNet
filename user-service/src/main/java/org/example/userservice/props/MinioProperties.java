@@ -1,4 +1,4 @@
-package props;
+package org.example.userservice.props;
 
 
 import lombok.Data;

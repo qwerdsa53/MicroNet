@@ -7,10 +7,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
+import org.example.userservice.props.MinioProperties;
 import org.example.userservice.services.ImageService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import props.MinioProperties;
 
 import java.io.IOException;
 import java.io.InputStream;

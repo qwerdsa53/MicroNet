@@ -3,11 +3,11 @@ package org.example.userservice.services.impl;
 import lombok.RequiredArgsConstructor;
 import org.example.userservice.exceptions.FriendNotFoundException;
 import org.example.userservice.exceptions.UserNotFoundException;
-import org.example.userservice.model.Image;
 import org.example.userservice.model.User;
 import org.example.userservice.model.dto.LiteUserDto;
 import org.example.userservice.repo.UserRepository;
 import org.example.userservice.services.FriendService;
+import org.example.userservice.utiles.Mapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +22,7 @@ import java.util.Set;
 public class FriendServiceImpl implements FriendService {
 
     private final UserRepository userRepository;
+    private final Mapper mapper;
 
     @Override
     @Transactional()
@@ -59,10 +60,9 @@ public class FriendServiceImpl implements FriendService {
         if (friendRequestIds.isEmpty()) {
             return Page.empty(PageRequest.of(page, size));
         }
-
         Pageable pageable = PageRequest.of(page, size, Sort.by("username").ascending());
         return userRepository.findFriendRequestsByUserId(friendRequestIds, pageable)
-                .map(this::convertToLiteDto);
+                .map(mapper::convertToDto);
     }
 
     @Override
@@ -121,18 +121,6 @@ public class FriendServiceImpl implements FriendService {
         Pageable pageable = PageRequest.of(page, size, Sort.by("username"));
 
         return userRepository.findFriendsByUserId(user.getFriends(), pageable)
-                .map(this::convertToLiteDto);
-    }
-
-    private LiteUserDto convertToLiteDto(User user) {
-        String profilePictureUrl = user.getProfilePictures().stream()
-                .findFirst()
-                .map(Image::getUrl)
-                .orElse("");
-        return LiteUserDto.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .avatarUrl(profilePictureUrl)
-                .build();
+                .map(mapper::convertToDto);
     }
 }
