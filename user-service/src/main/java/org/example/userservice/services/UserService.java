@@ -7,9 +7,10 @@ import org.example.userservice.model.dto.UserDto;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public interface UserService {
-    JwtResponse registerUser(UserDto userDto, List<MultipartFile> profilePictures) throws FileUploadException;
+    CompletableFuture<JwtResponse> registerUser(UserDto userDto, List<MultipartFile> profilePictures) throws FileUploadException;
 
     UserDto getUserInfo(String authorizationHeader);
 

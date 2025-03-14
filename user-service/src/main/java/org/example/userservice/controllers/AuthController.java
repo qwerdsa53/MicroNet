@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 
 @RestController
@@ -38,7 +39,7 @@ public class AuthController {
 
     @PostMapping(path = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(value = HttpStatus.CREATED)
-    public JwtResponse registerUser(
+    public CompletableFuture<JwtResponse> registerUser(
             @RequestPart(name = "files", required = false) List<MultipartFile> profilePictures,
             @RequestPart(name = "data") UserDto userDto
     ) throws FileUploadException {

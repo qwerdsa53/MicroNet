@@ -1,9 +1,7 @@
 package org.example.userservice.services.impl;
 
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.example.userservice.JwtTokenProvider;
@@ -23,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
@@ -45,13 +44,12 @@ public class UserServiceImpl implements UserService {
     private final JwtUtil jwtUtil;
 
 
-    @Async
+    @Async("asyncExecutor")
     @Transactional
-    @SneakyThrows
-    public JwtResponse registerUser(
+    public CompletableFuture<JwtResponse> registerUser(
             @NotNull UserDto userDto,
             List<MultipartFile> profilePictures
-    ) {
+    ) throws FileUploadException {
         log.info("Executing in thread: {}", Thread.currentThread().getName());
 
         if (userRepository.existsByEmail(userDto.getEmail())) {
@@ -76,14 +74,15 @@ public class UserServiceImpl implements UserService {
 
         String token = jwtTokenProvider.generateToken(user);
 //            sendWelcomeEmailAsync(savedUser.getEmail());
-        return new JwtResponse(
+        return CompletableFuture.completedFuture(new JwtResponse(
                 savedUser.getId(),
                 savedUser.getUsername(),
                 convertToDto(savedUser.getProfilePictures()),
                 token
-        );
+        ));
     }
 
+    @Transactional(readOnly = true)
     public UserDto getUserInfo(String authorizationHeader) {
         Long id = extractUserId(authorizationHeader);
         return getUserById(id);
