@@ -62,7 +62,7 @@ public class FriendServiceImpl implements FriendService {
         }
         Pageable pageable = PageRequest.of(page, size, Sort.by("username").ascending());
         return userRepository.findFriendRequestsByUserId(friendRequestIds, pageable)
-                .map(mapper::convertToDto);
+                .map(mapper::convertToLiteDto);
     }
 
     @Override
@@ -121,6 +121,6 @@ public class FriendServiceImpl implements FriendService {
         Pageable pageable = PageRequest.of(page, size, Sort.by("username"));
 
         return userRepository.findFriendsByUserId(user.getFriends(), pageable)
-                .map(mapper::convertToDto);
+                .map(mapper::convertToLiteDto);
     }
 }

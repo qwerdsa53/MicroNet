@@ -17,6 +17,7 @@ import org.example.userservice.repo.UserRepository;
 import org.example.userservice.services.ImageService;
 import org.example.userservice.services.UserService;
 import org.example.userservice.utiles.JwtUtil;
+import org.example.userservice.utiles.Mapper;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -41,6 +42,7 @@ public class UserServiceImpl implements UserService {
     private final MailServiceClient mailServiceClient;
     private final JwtTokenProvider jwtTokenProvider;
     private final ImageRepo imageRepo;
+    private final Mapper mapper;
     private final JwtUtil jwtUtil;
 
 
@@ -84,13 +86,13 @@ public class UserServiceImpl implements UserService {
 
     @Transactional(readOnly = true)
     public UserDto getUserInfo(String authorizationHeader) {
-        Long id = extractUserId(authorizationHeader);
+        Long id = jwtUtil.extractUserId(authorizationHeader);
         return getUserById(id);
     }
 
     public UserDto getUserById(Long id) {
         UserDto userDto = userRepository.findById(id)
-                .map(this::convertToDto)
+                .map(mapper::convertToDto)
                 .orElseThrow(() -> new UserNotFoundException("user not found"));
         log.info("User fetched from database: {}", id);
         return userDto;
@@ -118,7 +120,7 @@ public class UserServiceImpl implements UserService {
             UserDto userDto,
             List<MultipartFile> profilePictures
     ) throws FileUploadException {
-        userDto.setId(extractUserId(authorizationHeader));
+        userDto.setId(jwtUtil.extractUserId(authorizationHeader));
         User existingUser = userRepository.findUserWithLock(userDto.getId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -133,7 +135,7 @@ public class UserServiceImpl implements UserService {
 
         addProfilePictures(profilePictures, existingUser);
         userRepository.save(existingUser);
-        return convertToDto(existingUser);
+        return mapper.convertToDto(existingUser);
     }
 
     public void updatePassword(Long userId, String newPassword) {
@@ -154,20 +156,6 @@ public class UserServiceImpl implements UserService {
                 !existingUser.getDescription().equals(userDto.getDescription()) ||
                 !existingUser.getBirthday().equals(userDto.getBirthday()) ||
                 existingUser.isEnabled() != userDto.isEnabled();
-    }
-
-    private Long extractUserId(String authorizationHeader) {
-        return jwtUtil.extractUserId(authorizationHeader);
-    }
-
-    public UserDto convertToDto(User user) {
-        return UserDto.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .enabled(user.isEnabled())
-                .profilePictures(user.getProfilePictures().stream().map(Image::getUrl).toList())
-                .build();
     }
 
     private List<String> convertToDto(List<Image> images) {

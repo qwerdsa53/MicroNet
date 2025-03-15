@@ -148,14 +148,14 @@ public class BlackListServiceImplTest {
         );
         when(userRepository.findBlackListedUsers(anySet(), any()))
                 .thenReturn(page);
-        when(mapper.convertToDto(blackListedUser))
+        when(mapper.convertToLiteDto(blackListedUser))
                 .thenReturn(dto);
 
         Page<LiteUserDto> result = blackListService.getBlackList(userId, 0, 10);
 
         assertEquals(1, result.getTotalElements());
         assertEquals("user2", result.getContent().get(0).getUsername());
-        verify(mapper).convertToDto(blackListedUser);
+        verify(mapper).convertToLiteDto(blackListedUser);
     }
 
 

@@ -3,6 +3,7 @@ package org.example.userservice.unit.services.impl;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.example.userservice.JwtTokenProvider;
 import org.example.userservice.exceptions.UserAlreadyExistException;
+import org.example.userservice.model.Image;
 import org.example.userservice.model.Role;
 import org.example.userservice.model.User;
 import org.example.userservice.model.dto.JwtResponse;
@@ -14,11 +15,12 @@ import org.example.userservice.services.impl.MailServiceClient;
 import org.example.userservice.services.impl.TokenServiceImpl;
 import org.example.userservice.services.impl.UserServiceImpl;
 import org.example.userservice.utiles.JwtUtil;
-import org.junit.jupiter.api.BeforeEach;
+import org.example.userservice.utiles.Mapper;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -33,6 +36,7 @@ import java.util.concurrent.ExecutionException;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 public class UserServiceImplTest {
 
     @Mock
@@ -57,15 +61,14 @@ public class UserServiceImplTest {
     private ImageRepo imageRepo;
 
     @Mock
+    private Mapper mapper;
+
+    @Mock
     private JwtUtil jwtUtil;
 
     @InjectMocks
     private UserServiceImpl userService;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @Test
     void registerUser_success() throws FileUploadException, ExecutionException, InterruptedException {
@@ -233,5 +236,64 @@ public class UserServiceImplTest {
                 .upload(any(MultipartFile.class), anyLong());
         verify(jwtTokenProvider, times(1))
                 .generateToken(any(User.class));
+    }
+
+    @Test
+    void getUserInfo_success() {
+        String authorizationHeader = "Bearer token";
+        Long userId = 1L;
+        UserDto expectedUser = UserDto.builder()
+                .id(1L)
+                .username("John Doe")
+                .email("john@example.com")
+                .build();
+
+        when(jwtUtil.extractUserId(authorizationHeader)).thenReturn(1L);
+        when(userRepository.findById(1L))
+                .thenReturn(
+                        Optional.of(
+                                User.builder()
+                                        .id(1L)
+                                        .username("John Doe")
+                                        .email("john@example.com")
+                                        .profilePictures(List.of(Image.builder().url("https...").build()))
+                                        .build()
+                        )
+                );
+        when(mapper.convertToDto(any())).thenReturn(expectedUser);
+
+        UserDto result = userService.getUserInfo(authorizationHeader);
+
+        assertEquals(expectedUser, result);
+
+        verify(jwtUtil, times(1)).extractUserId(authorizationHeader);
+        verify(userRepository, times(1)).findById(userId);
+        verify(mapper, times(1)).convertToDto(any());
+    }
+
+    @Test
+    void getUserById_success() {
+        Long userId = 1L;
+        User user = User.builder()
+                .id(1L)
+                .username("John Doe")
+                .email("john@example.com")
+                .profilePictures(List.of(Image.builder().url("https...").build()))
+                .build();
+        UserDto expectedUser = UserDto.builder()
+                .id(1L)
+                .username("John Doe")
+                .email("john@example.com")
+                .build();
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(mapper.convertToDto(user)).thenReturn(expectedUser);
+
+        UserDto result = userService.getUserById(userId);
+
+        assertEquals(expectedUser, result);
+
+        verify(userRepository, times(1)).findById(userId);
+        verify(mapper, times(1)).convertToDto(user);
     }
 }

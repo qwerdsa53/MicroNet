@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @NoArgsConstructor
-public class Image {
+public class Image implements Cloneable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -56,5 +56,17 @@ public class Image {
                 ", url='" + url + '\'' +
                 ", post=" + user.getId() +
                 '}';
+    }
+
+    @Override
+    public Image clone() {
+        try {
+            Image cloned = (Image) super.clone();
+            cloned.uploadedAt = (this.uploadedAt != null) ? LocalDateTime.from(this.uploadedAt) : null;
+            cloned.user = null;
+            return cloned;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

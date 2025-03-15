@@ -68,6 +68,6 @@ public class BlackListServiceImpl implements BlackListService {
         }
         Pageable pageable = PageRequest.of(page, size, Sort.by("username").ascending());
         return userRepository.findBlackListedUsers(blackListedIds, pageable)
-                .map(mapper::convertToDto);
+                .map(mapper::convertToLiteDto);
     }
 }

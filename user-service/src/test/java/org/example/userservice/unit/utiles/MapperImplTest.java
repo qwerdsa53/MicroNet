@@ -5,6 +5,7 @@ import org.example.userservice.model.Image;
 import org.example.userservice.model.Role;
 import org.example.userservice.model.User;
 import org.example.userservice.model.dto.LiteUserDto;
+import org.example.userservice.model.dto.UserDto;
 import org.example.userservice.utiles.Mapper;
 import org.example.userservice.utiles.MapperImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,18 +13,22 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MapperImplTest {
-    private User user;
+    private User temp;
+    private Image imageTemp1;
+    private Image imageTemp2;
     private final Mapper mapper = new MapperImpl();
 
     @BeforeEach
     void setUp() {
-        user = User.builder()
+        temp = User.builder()
                 .id(1L)
                 .username("qwerdsa53")
                 .password("10101010")
@@ -38,32 +43,36 @@ class MapperImplTest {
                 .birthday(LocalDate.MIN)
                 .description("bla bla bla")
                 .build();
-    }
 
-    @Test
-    void convertToDto() {
-        Image image1 = Image.builder()
+        imageTemp1 = Image.builder()
                 .id(1L)
                 .url("http...")
                 .imageName("Name")
                 .contentType("jpg")
                 .size(1212L)
                 .uploadedAt(LocalDateTime.MIN)
-                .user(user)
                 .build();
 
-        Image image2 = Image.builder()
+        imageTemp2 = Image.builder()
                 .id(2L)
                 .url("https...")
                 .imageName("Name2")
                 .contentType("png")
                 .size(11L)
                 .uploadedAt(LocalDateTime.MIN)
-                .user(user)
                 .build();
-        user.setProfilePictures(List.of(image1, image2));
+    }
 
-        LiteUserDto userDto = mapper.convertToDto(user);
+    @Test
+    void convertToLiteDto_success() {
+        User user = temp.clone();
+        Image image1 = imageTemp1.clone();
+        Image image2 = imageTemp2.clone();
+        user.setProfilePictures(List.of(image1, image2));
+        image1.setUser(user);
+        image2.setUser(user);
+
+        LiteUserDto userDto = mapper.convertToLiteDto(user);
 
         assertEquals(userDto.getId(), user.getId());
         assertEquals(userDto.getUsername(), user.getUsername());
@@ -71,8 +80,10 @@ class MapperImplTest {
     }
 
     @Test
-    void convertToDto_withEmptyProfilePictures() {
-        LiteUserDto userDto = mapper.convertToDto(user);
+    void convertToLiteDto_withEmptyProfilePictures() {
+        User user = temp.clone();
+        user.setProfilePictures(new ArrayList<>());
+        LiteUserDto userDto = mapper.convertToLiteDto(user);
 
         assertEquals(userDto.getId(), user.getId());
         assertEquals(userDto.getUsername(), user.getUsername());
@@ -81,13 +92,60 @@ class MapperImplTest {
 
 
     @Test
-    void convertToDto_withNullProfilePictures() {
+    void convertToLiteDto_withNullProfilePictures() {
+        User user = temp.clone();
         user.setProfilePictures(null);
 
-        LiteUserDto userDto = mapper.convertToDto(user);
+        LiteUserDto userDto = mapper.convertToLiteDto(user);
 
         assertEquals(userDto.getId(), user.getId());
         assertEquals(userDto.getUsername(), user.getUsername());
         assertEquals(userDto.getAvatarUrl(), "");
+    }
+
+    @Test
+    void convertToDto_success() {
+        User user = temp.clone();
+        Image image1 = imageTemp1.clone();
+        Image image2 = imageTemp2.clone();
+        user.setProfilePictures(List.of(image1, image2));
+        image1.setUser(user);
+        image2.setUser(user);
+
+        UserDto userDto = mapper.convertToDto(user);
+
+        assertEquals(userDto.getId(), user.getId());
+        assertEquals(userDto.getUsername(), user.getUsername());
+        assertEquals(userDto.getBirthday(), user.getBirthday());
+        assertEquals(userDto.getDescription(), user.getDescription());
+        assertEquals(userDto.getProfilePictures(), user.getProfilePictures().stream().map(Image::getUrl).toList());
+    }
+
+    @Test
+    void convertToDto_withEmptyProfilePictures() {
+        User user = temp.clone();
+        user.setProfilePictures(new ArrayList<>());
+
+        UserDto userDto = mapper.convertToDto(user);
+
+        assertEquals(userDto.getId(), user.getId());
+        assertEquals(userDto.getUsername(), user.getUsername());
+        assertEquals(userDto.getBirthday(), user.getBirthday());
+        assertEquals(userDto.getDescription(), user.getDescription());
+        assertEquals(userDto.getProfilePictures(), Collections.emptyList());
+    }
+
+    @Test
+    void convertToDto_withNullProfilePictures() {
+        User user = temp.clone();
+        user.setProfilePictures(null);
+
+        UserDto userDto = mapper.convertToDto(user);
+
+        assertEquals(userDto.getId(), user.getId());
+        assertEquals(userDto.getUsername(), user.getUsername());
+        assertEquals(userDto.getBirthday(), user.getBirthday());
+        assertEquals(userDto.getDescription(), user.getDescription());
+        assertEquals(userDto.getProfilePictures(), Collections.emptyList());
     }
 }
