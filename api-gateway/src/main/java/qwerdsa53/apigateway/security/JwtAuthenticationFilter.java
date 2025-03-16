@@ -66,12 +66,18 @@ public class JwtAuthenticationFilter implements WebFilter {
         return chain.filter(exchange);
     }
 
+
     private String extractTokenFromRequest(ServerHttpRequest request) {
         String authorizationHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             return authorizationHeader.substring(7);
         }
-        return null;
+        List<String> wsProtocolHeaders = request.getHeaders().get("Sec-WebSocket-Protocol");
+        if (wsProtocolHeaders != null && !wsProtocolHeaders.isEmpty()) {
+            return wsProtocolHeaders.get(0);
+        }
+
+        return request.getQueryParams().getFirst("token");
     }
 }
 

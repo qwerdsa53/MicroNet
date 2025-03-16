@@ -17,6 +17,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -57,6 +58,7 @@ class BlackListServiceImplIntegrationTest {
                 .email("req@example.com")
                 .enabled(true)
                 .userBlackList(new HashSet<>())
+                .lastSeen(LocalDateTime.now())
                 .build();
         User target = User.builder()
                 .username("target")
@@ -64,6 +66,7 @@ class BlackListServiceImplIntegrationTest {
                 .email("target@example.com")
                 .enabled(true)
                 .userBlackList(new HashSet<>())
+                .lastSeen(LocalDateTime.now())
                 .build();
 
         userRepository.save(requester);

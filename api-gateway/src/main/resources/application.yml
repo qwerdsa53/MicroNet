@@ -11,16 +11,14 @@ spring:
         enabled: true
 jwt:
   secret: ${SECRET}
-user:
-  service:
-    uri: ${USER_SERVICE_URI}
-posts:
-  service:
-    uri: ${POST_SERVICE_URI}
-feed:
-  service:
-    uri: ${FEED_SERVICE_URI}
-mail:
-  service:
-    uri: ${MAIL_SERVICE_URI}
+user-service:
+  uri: ${USER_SERVICE_URI}
+posts-service:
+  uri: ${POST_SERVICE_URI}
+feed-service:
+  uri: ${FEED_SERVICE_URI}
+mail-service:
+  uri: ${MAIL_SERVICE_URI}
+ws-gateway:
+  uri: ${WS_GATEWAY_URI}
 debug: true

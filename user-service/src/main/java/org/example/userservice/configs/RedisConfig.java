@@ -88,5 +88,24 @@ public class RedisConfig {
         template.setValueSerializer(new StringRedisSerializer());
         return template;
     }
+
+    @Bean
+    public LettuceConnectionFactory onlineUsersConnectionFactory() {
+        RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
+        configuration.setHostName(redisHost);
+        configuration.setPort(6379);
+        configuration.setDatabase(3);
+        return new LettuceConnectionFactory(configuration);
+    }
+
+    @Bean
+    @DependsOn("onlineUsersConnectionFactory")
+    public RedisTemplate<String, String> onlineUsersRedisTemplate(LettuceConnectionFactory onlineUsersConnectionFactory) {
+        RedisTemplate<String, String> template = new RedisTemplate<>();
+        template.setConnectionFactory(onlineUsersConnectionFactory);
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new StringRedisSerializer());
+        return template;
+    }
 }
 

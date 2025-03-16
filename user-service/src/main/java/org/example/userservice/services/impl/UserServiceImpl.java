@@ -66,6 +66,7 @@ public class UserServiceImpl implements UserService {
                 .roles(Set.of(Role.ROLE_USER))
                 .birthday(userDto.getBirthday())
                 .description(userDto.getDescription())
+                .lastSeen(LocalDateTime.now())
                 .enabled(false)
                 .build();
 

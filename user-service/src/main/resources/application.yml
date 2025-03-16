@@ -4,6 +4,9 @@ spring:
   config:
     import:
       - optional:file:user-service/.env[.properties]
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+    enabled: false
   datasource:
     url: ${P_URL}
     username: ${P_USERNAME}

@@ -72,6 +72,9 @@ public class User implements Cloneable {
     @Column()
     private String description;
 
+    @Column()
+    private LocalDateTime lastSeen;
+
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 

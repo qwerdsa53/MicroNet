@@ -11,7 +11,9 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
 
@@ -24,8 +26,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
     void enableUserById(@Param("id") Long id);
 
     @Modifying
+    @Transactional
     @Query("UPDATE User u SET u.enabled = true WHERE u.email = :email")
     int enableUserByEmail(@Param("email") String email);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE User u SET u.lastSeen = :time WHERE u.id = :id")
+    void updateLastSeen(@Param("id") Long id, @Param("time") LocalDateTime time);
 
     @Query("SELECT u FROM User u WHERE u.email = :email")
     Optional<User> findByEmail(@Param("email") String email);
@@ -43,8 +51,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Page<User> findBlackListedUsers(@Param("friendIds") Set<Long> friendIds, Pageable pageable);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT u FROM User u WHERE u.id = :userId")
-    Optional<User> findUserWithLock(@Param("userId") Long userId);
+    @Query("SELECT u FROM User u WHERE u.id = :id")
+    Optional<User> findUserWithLock(@Param("id") Long id);
 
     @Query("SELECT u FROM User u WHERE u.id IN :friendIds")
     Page<User> findFriendsByUserId(@Param("friendIds") Set<Long> friendIds, Pageable pageable);
