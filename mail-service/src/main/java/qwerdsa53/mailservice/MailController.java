@@ -17,7 +17,7 @@ public class MailController {
     public ResponseEntity<String> sendConfirmEmail(
             @RequestHeader("X-API-KEY") String apiKey,
             @RequestBody String email
-            ){
+    ) {
         log.info("API Key received in Controller: {}", apiKey);
         try {
             emailService.sendConfirmEmail(email);

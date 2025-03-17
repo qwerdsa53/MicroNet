@@ -1,4 +1,4 @@
-package qwerdsa53.wsgateway;
+package qwerdsa53.wsgateway.configs;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.WebSocketHandler;

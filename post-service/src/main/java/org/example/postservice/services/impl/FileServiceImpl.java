@@ -52,7 +52,7 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public void deleteFile(String filePath) {
-        if(filePath.contains("https://") || filePath.contains("http://")){
+        if (filePath.contains("https://") || filePath.contains("http://")) {
             filePath = extractFilePath(filePath, minioProperties.getBucket());
         }
         try {
@@ -136,6 +136,7 @@ public class FileServiceImpl implements FileService {
                 .object(fileName)
                 .build());
     }
+
     private String extractFilePath(String filePath, String bucketName) {
         try {
             URI uri = new URI(filePath);

@@ -11,9 +11,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 @Slf4j
@@ -22,7 +20,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
-    private final Map<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
+    private final WebSocketSessionManager sessionManager;
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
@@ -33,22 +31,17 @@ public class WebSocketHandler extends TextWebSocketHandler {
             return;
         }
 
-        sessions.put(userId, session);
-        log.info("User {} connected", userId);
+        sessionManager.addSession(userId, session);
         sendStatusToKafka(userId, true);
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         String userId = extractUserId(session);
-        if (userId == null) {
-            log.warn("User ID is null on disconnect.");
-            return;
+        if (userId != null) {
+            sessionManager.removeSession(userId);
+            sendStatusToKafka(userId, false);
         }
-
-        sessions.remove(userId);
-        log.info("User {} disconnected", userId);
-        sendStatusToKafka(userId, false);
     }
 
     private void sendStatusToKafka(String userId, boolean isOnline) {

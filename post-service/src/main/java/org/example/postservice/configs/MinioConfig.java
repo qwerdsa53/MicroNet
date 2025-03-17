@@ -3,7 +3,6 @@ package org.example.postservice.configs;
 import io.minio.MinioClient;
 import lombok.RequiredArgsConstructor;
 import org.example.postservice.props.MinioProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

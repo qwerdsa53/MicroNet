@@ -50,7 +50,7 @@ public class FriendController {
         friendService.acceptFriendRequest(userId, requesterId);
     }
 
-    @DeleteMapping("/reject/{requesterId}")
+    @DeleteMapping("/reject/{target}")
     public void rejectFriendRequest(
             @RequestHeader("Authorization") String authorizationHeader,
             @PathVariable Long target) {

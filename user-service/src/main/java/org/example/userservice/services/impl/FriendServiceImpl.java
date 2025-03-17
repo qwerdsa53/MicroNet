@@ -1,10 +1,15 @@
 package org.example.userservice.services.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.example.userservice.exceptions.FriendNotFoundException;
 import org.example.userservice.exceptions.UserNotFoundException;
+import org.example.userservice.model.NOTIFICATION_STATUS;
 import org.example.userservice.model.User;
 import org.example.userservice.model.dto.LiteUserDto;
+import org.example.userservice.model.notifications.FriendRequestNotification;
 import org.example.userservice.repo.UserRepository;
 import org.example.userservice.services.FriendService;
 import org.example.userservice.utiles.Mapper;
@@ -12,18 +17,24 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class FriendServiceImpl implements FriendService {
 
     private final UserRepository userRepository;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final ObjectMapper objectMapper;
     private final Mapper mapper;
 
+    @SneakyThrows
     @Override
     @Transactional()
     public void sendFriendRequest(Long requesterId, Long targetUserId) {
@@ -47,8 +58,18 @@ public class FriendServiceImpl implements FriendService {
             requester.getFriends().add(targetUserId);
             return;
         }
-
+        FriendRequestNotification notification = new FriendRequestNotification(
+                targetUserId,
+                requesterId,
+                LocalDateTime.now(),
+                NOTIFICATION_STATUS.UNREAD
+        );
         targetUser.getFriendRequests().add(requesterId);
+        String payload = objectMapper
+                .writerWithDefaultPrettyPrinter()
+                .writeValueAsString(notification);
+        kafkaTemplate.send("notifications", payload);
+        log.info("Sent notification to WebSocket topic: {}", payload);
     }
 
     @Transactional(readOnly = true)

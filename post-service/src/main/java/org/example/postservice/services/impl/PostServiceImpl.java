@@ -145,10 +145,9 @@ public class PostServiceImpl implements PostService {
                 fileService.deleteFolder(post.getFiles().get(0).getUrl());
             }
             postRepo.delete(post);
-        }catch (PostNotFoundException e){
+        } catch (PostNotFoundException e) {
             throw new PostNotFoundException(e.getMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new PostDeleteException("Error while deleting post");
         }
     }
