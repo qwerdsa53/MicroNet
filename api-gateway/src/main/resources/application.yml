@@ -9,6 +9,17 @@ spring:
       port: 6379
       ssl:
         enabled: true
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: Post Service
+        url: http://localhost:8080/api/v1/posts/v3/api-docs
+      - name: User Service
+        url: http://localhost:8080/api/v1/user/v3/api-docs
+  api-docs:
+    enabled: true
+    paths-to-match: /**
 jwt:
   secret: ${SECRET}
 user-service:

@@ -16,6 +16,7 @@ import org.example.userservice.services.impl.TokenServiceImpl;
 import org.example.userservice.services.impl.UserServiceImpl;
 import org.example.userservice.utiles.JwtUtil;
 import org.example.userservice.utiles.Mapper;
+import org.example.userservice.utiles.RedisForStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,10 +27,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -65,6 +64,9 @@ public class UserServiceImplTest {
 
     @Mock
     private JwtUtil jwtUtil;
+
+    @Mock
+    private RedisForStatus redis;
 
     @InjectMocks
     private UserServiceImpl userService;
@@ -242,13 +244,16 @@ public class UserServiceImplTest {
     void getUserInfo_success() {
         String authorizationHeader = "Bearer token";
         Long userId = 1L;
+        Boolean isOline = true;
         UserDto expectedUser = UserDto.builder()
                 .id(1L)
                 .username("John Doe")
                 .email("john@example.com")
+                .lastSeen(LocalDateTime.MIN)
+                .isOnline(true)
                 .build();
 
-        when(jwtUtil.extractUserId(authorizationHeader)).thenReturn(1L);
+        when(jwtTokenProvider.getUserIdFromToken(anyString())).thenReturn(1L);
         when(userRepository.findById(1L))
                 .thenReturn(
                         Optional.of(
@@ -257,43 +262,50 @@ public class UserServiceImplTest {
                                         .username("John Doe")
                                         .email("john@example.com")
                                         .profilePictures(List.of(Image.builder().url("https...").build()))
+                                        .lastSeen(LocalDateTime.MIN)
+                                        .userBlackList(new HashSet<>())
                                         .build()
                         )
                 );
-        when(mapper.convertToDto(any())).thenReturn(expectedUser);
+        when(redis.isOnline("user:online:" + userId)).thenReturn(Optional.of(isOline));
+        when(mapper.convertToDto(any(), eq(isOline))).thenReturn(expectedUser);
 
         UserDto result = userService.getUserInfo(authorizationHeader);
-
         assertEquals(expectedUser, result);
 
-        verify(jwtUtil, times(1)).extractUserId(authorizationHeader);
         verify(userRepository, times(1)).findById(userId);
-        verify(mapper, times(1)).convertToDto(any());
+        verify(mapper, times(1)).convertToDto(any(), anyBoolean());
     }
 
     @Test
     void getUserById_success() {
         Long userId = 1L;
+        Boolean isOline = true;
+        String authorizationHeader = "Bearer token";
         User user = User.builder()
                 .id(1L)
                 .username("John Doe")
                 .email("john@example.com")
                 .profilePictures(List.of(Image.builder().url("https...").build()))
+                .userBlackList(new HashSet<>())
                 .build();
         UserDto expectedUser = UserDto.builder()
                 .id(1L)
                 .username("John Doe")
                 .email("john@example.com")
+                .isOnline(true)
                 .build();
 
+        when(jwtTokenProvider.getUserIdFromToken(anyString())).thenReturn(2L);
+        when(redis.isOnline("user:online:" + userId)).thenReturn(Optional.of(isOline));
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(mapper.convertToDto(user)).thenReturn(expectedUser);
+        when(mapper.convertToDto(user, true)).thenReturn(expectedUser);
 
-        UserDto result = userService.getUserById(userId);
+        UserDto result = userService.getUserById(authorizationHeader, userId);
 
         assertEquals(expectedUser, result);
 
         verify(userRepository, times(1)).findById(userId);
-        verify(mapper, times(1)).convertToDto(user);
+        verify(mapper, times(1)).convertToDto(eq(user), anyBoolean());
     }
 }

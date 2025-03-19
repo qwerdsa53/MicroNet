@@ -20,7 +20,14 @@ spring:
   data:
     redis:
       host: ${REDIS_HOST}
-
+    rest:
+          detection-strategy: annotated
+springdoc:
+  api-docs:
+    path: /api/v1/posts/v3/api-docs
+logging:
+  level:
+    org.springdoc.core.utils.SpringDocAnnotationsUtils: ERROR
 server:
   port: 8083
 debug: true

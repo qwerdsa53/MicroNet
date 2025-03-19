@@ -2,16 +2,20 @@ package org.example.postservice.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "files")
+@Table(name = "profile_pictures")
 @Data
+@AllArgsConstructor
+@Builder
 @NoArgsConstructor
-public class Image {
+public class Image implements Cloneable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -52,5 +56,17 @@ public class Image {
                 ", url='" + url + '\'' +
                 ", post=" + user.getId() +
                 '}';
+    }
+
+    @Override
+    public Image clone() {
+        try {
+            Image cloned = (Image) super.clone();
+            cloned.uploadedAt = (this.uploadedAt != null) ? LocalDateTime.from(this.uploadedAt) : null;
+            cloned.user = null;
+            return cloned;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

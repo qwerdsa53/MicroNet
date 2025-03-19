@@ -13,7 +13,7 @@ import java.util.List;
 public class MapperImpl implements Mapper {
 
     @Override
-    public UserDto convertToDto(User user) {
+    public UserDto convertToDto(User user, Boolean isOnline) {
         return UserDto.builder()
                 .id(user.getId())
                 .username(user.getUsername())
@@ -26,11 +26,13 @@ public class MapperImpl implements Mapper {
                                 ? user.getProfilePictures().stream().map(Image::getUrl).toList()
                                 : Collections.emptyList()
                 )
+                .isOnline(isOnline)
+                .lastSeen(user.getLastSeen())
                 .build();
     }
 
     @Override
-    public LiteUserDto convertToLiteDto(User user) {
+    public LiteUserDto convertToLiteDto(User user, boolean isOnline) {
         String profilePictureUrl = "";
         List<Image> pictures = user.getProfilePictures();
         if (pictures != null && !pictures.isEmpty()) {
@@ -40,6 +42,8 @@ public class MapperImpl implements Mapper {
                 .id(user.getId())
                 .username(user.getUsername())
                 .avatarUrl(profilePictureUrl)
+                .lastSeen(user.getLastSeen())
+                .isOnline(isOnline)
                 .build();
     }
 }

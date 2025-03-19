@@ -13,6 +13,7 @@ import org.example.userservice.model.notifications.FriendRequestNotification;
 import org.example.userservice.repo.UserRepository;
 import org.example.userservice.services.FriendService;
 import org.example.userservice.utiles.Mapper;
+import org.example.userservice.utiles.RedisForStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +33,7 @@ public class FriendServiceImpl implements FriendService {
     private final UserRepository userRepository;
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
+    private final RedisForStatus redis;
     private final Mapper mapper;
 
     @SneakyThrows
@@ -83,7 +85,10 @@ public class FriendServiceImpl implements FriendService {
         }
         Pageable pageable = PageRequest.of(page, size, Sort.by("username").ascending());
         return userRepository.findFriendRequestsByUserId(friendRequestIds, pageable)
-                .map(mapper::convertToLiteDto);
+                .map(requester -> {
+                    boolean isOnline = redis.isOnline("user:online:" + requester.getId()).orElse(false);
+                    return mapper.convertToLiteDto(requester, isOnline);
+                });
     }
 
     @Override
@@ -142,6 +147,9 @@ public class FriendServiceImpl implements FriendService {
         Pageable pageable = PageRequest.of(page, size, Sort.by("username"));
 
         return userRepository.findFriendsByUserId(user.getFriends(), pageable)
-                .map(mapper::convertToLiteDto);
+                .map(friend -> {
+                    boolean isOnline = redis.isOnline("user:online:" + friend.getId()).orElse(false);
+                    return mapper.convertToLiteDto(friend, isOnline);
+                });
     }
 }

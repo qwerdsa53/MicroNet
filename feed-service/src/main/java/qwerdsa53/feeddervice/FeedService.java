@@ -17,7 +17,7 @@ public class FeedService {
     private String postServiceUrl;
 
     public Object getAllPosts(int page, int size, List<String> tags) {
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(postServiceUrl)
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(postServiceUrl)
                 .path("/all")
                 .queryParam("page", page)
                 .queryParam("size", size);

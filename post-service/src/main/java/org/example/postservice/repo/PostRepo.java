@@ -8,12 +8,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
-@RepositoryRestResource(collectionResourceRel = "posts", path = "posts")
+@Repository
 public interface PostRepo extends JpaRepository<Post, Long> {
     List<Post> getAllByUserId(Long UserId);
 
@@ -31,13 +31,4 @@ public interface PostRepo extends JpaRepository<Post, Long> {
     Page<Post> findByTagsIn(List<Tag> tags, Pageable pageable);
 
 
-    @Modifying
-    @Query(value = """
-            INSERT INTO posts_images (post_id, image)
-            VALUES (:id, :fileName)
-            """, nativeQuery = true)
-    void addImage(
-            @Param("id") Long id,
-            @Param("fileName") String fileName
-    );
 }

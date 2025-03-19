@@ -18,6 +18,7 @@ import org.example.userservice.services.ImageService;
 import org.example.userservice.services.UserService;
 import org.example.userservice.utiles.JwtUtil;
 import org.example.userservice.utiles.Mapper;
+import org.example.userservice.utiles.RedisForStatus;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -41,6 +42,7 @@ public class UserServiceImpl implements UserService {
     private final ImageService imageService;
     private final MailServiceClient mailServiceClient;
     private final JwtTokenProvider jwtTokenProvider;
+    private final RedisForStatus redis;
     private final ImageRepo imageRepo;
     private final Mapper mapper;
     private final JwtUtil jwtUtil;
@@ -87,13 +89,24 @@ public class UserServiceImpl implements UserService {
 
     @Transactional(readOnly = true)
     public UserDto getUserInfo(String authorizationHeader) {
-        Long id = jwtUtil.extractUserId(authorizationHeader);
-        return getUserById(id);
+        Long id = jwtTokenProvider.getUserIdFromToken(authorizationHeader);
+        return getUserById(null, id);
     }
 
-    public UserDto getUserById(Long id) {
+    public UserDto getUserById(String authorizationHeader, Long id) {
+        Long requesterId = jwtTokenProvider.getUserIdFromToken(authorizationHeader);
         UserDto userDto = userRepository.findById(id)
-                .map(mapper::convertToDto)
+                .map(user -> {
+                    Boolean isOnline = redis.isOnline("user:online:" + id).orElse(false);
+                    if (user.getUserBlackList().contains(requesterId)) {
+                        user.setBirthday(null);
+                        user.setDescription(null);
+                        user.setLastSeen(null);
+                        user.setProfilePictures(null);
+                        isOnline = null;
+                    }
+                    return mapper.convertToDto(user, isOnline);
+                })
                 .orElseThrow(() -> new UserNotFoundException("user not found"));
         log.info("User fetched from database: {}", id);
         return userDto;
@@ -136,7 +149,9 @@ public class UserServiceImpl implements UserService {
 
         addProfilePictures(profilePictures, existingUser);
         userRepository.save(existingUser);
-        return mapper.convertToDto(existingUser);
+
+        boolean isOnline = redis.isOnline("user:online:" + existingUser.getId()).orElse(false);
+        return mapper.convertToDto(existingUser, isOnline);
     }
 
     public void updatePassword(Long userId, String newPassword) {

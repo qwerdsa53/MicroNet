@@ -1,6 +1,7 @@
 package org.example.userservice.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -11,6 +12,7 @@ import org.example.userservice.model.dto.validation.OnCreate;
 import org.example.userservice.model.dto.validation.OnUpdate;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Builder
@@ -41,5 +43,11 @@ public class UserDto {
     private List<String> profilePictures;
 
     @NotNull(message = "Password must not be null", groups = {OnCreate.class})
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String rawPassword;
+
+    private Boolean isOnline;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime lastSeen;
 }

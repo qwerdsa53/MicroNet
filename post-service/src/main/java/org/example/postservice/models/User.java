@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users")
@@ -20,7 +21,7 @@ import java.util.Set;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
+public class User implements Cloneable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -48,6 +49,11 @@ public class User {
     private Set<Long> friends = new HashSet<>();
 
     @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "user_blacklisted_user", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "blacklisted_user_id")
+    private Set<Long> userBlackList = new HashSet<>();
+
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "friend_requests", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "requester_id")
     private Set<Long> friendRequests = new HashSet<>();
@@ -66,8 +72,15 @@ public class User {
     @Column()
     private String description;
 
+    @Column()
+    private LocalDateTime lastSeen;
+
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    public User(Long id) {
+        this.id = id;
+    }
 
     @PrePersist
     protected void onCreate() {
@@ -80,9 +93,20 @@ public class User {
         updatedAt = LocalDateTime.now();
     }
 
-
-    public User(Long id) {
-        this.id = id;
+    @Override
+    public User clone() {
+        try {
+            User cloned = (User) super.clone();
+            cloned.roles = new HashSet<>(this.roles);
+            cloned.friends = new HashSet<>(this.friends);
+            cloned.userBlackList = new HashSet<>(this.userBlackList);
+            cloned.friendRequests = new HashSet<>(this.friendRequests);
+            cloned.profilePictures = this.profilePictures != null
+                    ? this.profilePictures.stream().map(Image::clone).collect(Collectors.toList())
+                    : new ArrayList<>();
+            return cloned;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
-
 }

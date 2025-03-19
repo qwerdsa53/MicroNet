@@ -26,13 +26,20 @@ public class GatewaySecurityConfig {
                         .pathMatchers(
                                 "api/v1/user/auth/register",
                                 "api/v1/user/auth/login",
-                                "api/v1/user/auth/confirm**"
+                                "api/v1/user/auth/confirm**",
+                                "/api/v1/posts/v3/api-docs/**",
+                                "/api/v1/user/v3/api-docs/**",
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/v3/api-docs"
                         ).permitAll()
                         .matchers(exchange -> {
                             String path = exchange.getRequest().getPath().toString();
                             return path.matches("/api/v1/user/\\d+") ?
                                     ServerWebExchangeMatcher.MatchResult.match() : ServerWebExchangeMatcher.MatchResult.notMatch();
                         }).permitAll()
+
                         .pathMatchers("/api/v1/user").authenticated()
                         .anyExchange().authenticated()
                 )

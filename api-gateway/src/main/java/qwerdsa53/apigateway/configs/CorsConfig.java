@@ -1,4 +1,4 @@
-package qwerdsa53.apigateway.security;
+package qwerdsa53.apigateway.configs;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

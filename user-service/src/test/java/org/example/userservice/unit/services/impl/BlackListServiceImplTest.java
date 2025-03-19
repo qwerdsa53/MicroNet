@@ -5,6 +5,7 @@ import org.example.userservice.model.dto.LiteUserDto;
 import org.example.userservice.repo.UserRepository;
 import org.example.userservice.services.impl.BlackListServiceImpl;
 import org.example.userservice.utiles.Mapper;
+import org.example.userservice.utiles.RedisForStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -29,6 +30,9 @@ public class BlackListServiceImplTest {
 
     @Mock
     private Mapper mapper;
+
+    @Mock
+    private RedisForStatus redis;
 
     @InjectMocks
     private BlackListServiceImpl blackListService;
@@ -133,6 +137,7 @@ public class BlackListServiceImplTest {
                 .id(2L)
                 .username("user2")
                 .avatarUrl("")
+                .isOnline(true)
                 .build();
         when(userRepository.findById(userId))
                 .thenReturn(Optional.of(user));
@@ -146,16 +151,16 @@ public class BlackListServiceImplTest {
                 ),
                 1
         );
+        when(redis.isOnline(any())).thenReturn(Optional.of(true));
+        when(mapper.convertToLiteDto(blackListedUser, true))
+                .thenReturn(dto);
         when(userRepository.findBlackListedUsers(anySet(), any()))
                 .thenReturn(page);
-        when(mapper.convertToLiteDto(blackListedUser))
-                .thenReturn(dto);
-
         Page<LiteUserDto> result = blackListService.getBlackList(userId, 0, 10);
 
         assertEquals(1, result.getTotalElements());
         assertEquals("user2", result.getContent().get(0).getUsername());
-        verify(mapper).convertToLiteDto(blackListedUser);
+        verify(mapper).convertToLiteDto(blackListedUser, true);
     }
 
 

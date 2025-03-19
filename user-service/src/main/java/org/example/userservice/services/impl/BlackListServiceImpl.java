@@ -6,7 +6,9 @@ import org.example.userservice.model.User;
 import org.example.userservice.model.dto.LiteUserDto;
 import org.example.userservice.repo.UserRepository;
 import org.example.userservice.services.BlackListService;
+import org.example.userservice.services.FriendService;
 import org.example.userservice.utiles.Mapper;
+import org.example.userservice.utiles.RedisForStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +22,8 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class BlackListServiceImpl implements BlackListService {
     private final UserRepository userRepository;
+    private final FriendService friendService;
+    private final RedisForStatus redis;
     private final Mapper mapper;
 
     @Override
@@ -35,6 +39,9 @@ public class BlackListServiceImpl implements BlackListService {
             throw new IllegalArgumentException("User already blacklisted");
         }
 
+        if (requester.getFriends().contains(targetId)) {
+            friendService.deleteFriend(requesterId, targetId);
+        }
         requester.getUserBlackList().add(targetId);
         userRepository.save(requester);
     }
@@ -68,6 +75,9 @@ public class BlackListServiceImpl implements BlackListService {
         }
         Pageable pageable = PageRequest.of(page, size, Sort.by("username").ascending());
         return userRepository.findBlackListedUsers(blackListedIds, pageable)
-                .map(mapper::convertToLiteDto);
+                .map(blackListedUser -> {
+                    boolean isOnline = redis.isOnline("user:online:" + blackListedUser.getId()).orElse(false);
+                    return mapper.convertToLiteDto(blackListedUser, isOnline);
+                });
     }
 }

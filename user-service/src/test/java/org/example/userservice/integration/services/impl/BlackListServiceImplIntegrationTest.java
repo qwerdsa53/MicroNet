@@ -5,6 +5,7 @@ import org.example.userservice.model.User;
 import org.example.userservice.model.dto.LiteUserDto;
 import org.example.userservice.repo.UserRepository;
 import org.example.userservice.services.BlackListService;
+import org.example.userservice.utiles.RedisForStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,9 @@ class BlackListServiceImplIntegrationTest {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private RedisForStatus redis;
 
 
     @BeforeEach

@@ -33,8 +33,8 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public UserDto getUserInfo(@PathVariable("id") Long id) {
-        return userService.getUserById(id);
+    public UserDto getUserInfo(@RequestHeader(value = "Authorization", required = false) String authorizationHeader, @PathVariable("id") Long id) {
+        return userService.getUserById(authorizationHeader, id);
     }
 
 

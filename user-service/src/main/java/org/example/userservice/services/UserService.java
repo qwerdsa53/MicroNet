@@ -14,7 +14,7 @@ public interface UserService {
 
     UserDto getUserInfo(String authorizationHeader);
 
-    UserDto getUserById(Long id);
+    UserDto getUserById(String authorizationHeader, Long id);
 
     void deleteUser(Long id);
 

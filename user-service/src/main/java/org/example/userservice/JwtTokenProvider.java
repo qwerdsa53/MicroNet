@@ -47,7 +47,18 @@ public class JwtTokenProvider {
         return Jwts.parserBuilder().setSigningKey(jwtSecret).build().parseClaimsJws(token).getBody().getSubject();
     }
 
+    private String extractToken(String authorizationHeader) {
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            return authorizationHeader.substring(7);
+        } else {
+            throw new IllegalArgumentException("Invalid Authorization header");
+        }
+    }
+
     public Long getUserIdFromToken(String token) {
+        if (token.startsWith("Bearer ")) {
+            token = extractToken(token);
+        }
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(jwtSecret)
                 .build()

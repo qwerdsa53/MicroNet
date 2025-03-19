@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MapperImplTest {
     private User temp;
@@ -42,6 +43,7 @@ class MapperImplTest {
                 .updatedAt(LocalDateTime.now())
                 .birthday(LocalDate.MIN)
                 .description("bla bla bla")
+                .lastSeen(LocalDateTime.MIN)
                 .build();
 
         imageTemp1 = Image.builder()
@@ -72,22 +74,26 @@ class MapperImplTest {
         image1.setUser(user);
         image2.setUser(user);
 
-        LiteUserDto userDto = mapper.convertToLiteDto(user);
+        LiteUserDto liteUserDto = mapper.convertToLiteDto(user, true);
 
-        assertEquals(userDto.getId(), user.getId());
-        assertEquals(userDto.getUsername(), user.getUsername());
-        assertEquals(userDto.getAvatarUrl(), image1.getUrl());
+        assertEquals(liteUserDto.getId(), user.getId());
+        assertEquals(liteUserDto.getUsername(), user.getUsername());
+        assertEquals(liteUserDto.getAvatarUrl(), image1.getUrl());
+        assertEquals(liteUserDto.getLastSeen(), user.getLastSeen());
+        assertTrue(liteUserDto.getIsOnline());
     }
 
     @Test
     void convertToLiteDto_withEmptyProfilePictures() {
         User user = temp.clone();
         user.setProfilePictures(new ArrayList<>());
-        LiteUserDto userDto = mapper.convertToLiteDto(user);
+        LiteUserDto liteUserDto = mapper.convertToLiteDto(user, true);
 
-        assertEquals(userDto.getId(), user.getId());
-        assertEquals(userDto.getUsername(), user.getUsername());
-        assertEquals(userDto.getAvatarUrl(), "");
+        assertEquals(liteUserDto.getId(), user.getId());
+        assertEquals(liteUserDto.getUsername(), user.getUsername());
+        assertEquals(liteUserDto.getAvatarUrl(), "");
+        assertEquals(liteUserDto.getLastSeen(), user.getLastSeen());
+        assertTrue(liteUserDto.getIsOnline());
     }
 
 
@@ -96,11 +102,13 @@ class MapperImplTest {
         User user = temp.clone();
         user.setProfilePictures(null);
 
-        LiteUserDto userDto = mapper.convertToLiteDto(user);
+        LiteUserDto liteUserDto = mapper.convertToLiteDto(user, true);
 
-        assertEquals(userDto.getId(), user.getId());
-        assertEquals(userDto.getUsername(), user.getUsername());
-        assertEquals(userDto.getAvatarUrl(), "");
+        assertEquals(liteUserDto.getId(), user.getId());
+        assertEquals(liteUserDto.getUsername(), user.getUsername());
+        assertEquals(liteUserDto.getAvatarUrl(), "");
+        assertEquals(liteUserDto.getLastSeen(), user.getLastSeen());
+        assertTrue(liteUserDto.getIsOnline());
     }
 
     @Test
@@ -112,13 +120,15 @@ class MapperImplTest {
         image1.setUser(user);
         image2.setUser(user);
 
-        UserDto userDto = mapper.convertToDto(user);
+        UserDto userDto = mapper.convertToDto(user, true);
 
         assertEquals(userDto.getId(), user.getId());
         assertEquals(userDto.getUsername(), user.getUsername());
         assertEquals(userDto.getBirthday(), user.getBirthday());
         assertEquals(userDto.getDescription(), user.getDescription());
         assertEquals(userDto.getProfilePictures(), user.getProfilePictures().stream().map(Image::getUrl).toList());
+        assertEquals(userDto.getLastSeen(), user.getLastSeen());
+        assertTrue(userDto.getIsOnline());
     }
 
     @Test
@@ -126,13 +136,15 @@ class MapperImplTest {
         User user = temp.clone();
         user.setProfilePictures(new ArrayList<>());
 
-        UserDto userDto = mapper.convertToDto(user);
+        UserDto userDto = mapper.convertToDto(user, true);
 
         assertEquals(userDto.getId(), user.getId());
         assertEquals(userDto.getUsername(), user.getUsername());
         assertEquals(userDto.getBirthday(), user.getBirthday());
         assertEquals(userDto.getDescription(), user.getDescription());
         assertEquals(userDto.getProfilePictures(), Collections.emptyList());
+        assertEquals(userDto.getLastSeen(), user.getLastSeen());
+        assertTrue(userDto.getIsOnline());
     }
 
     @Test
@@ -140,12 +152,14 @@ class MapperImplTest {
         User user = temp.clone();
         user.setProfilePictures(null);
 
-        UserDto userDto = mapper.convertToDto(user);
+        UserDto userDto = mapper.convertToDto(user, true);
 
         assertEquals(userDto.getId(), user.getId());
         assertEquals(userDto.getUsername(), user.getUsername());
         assertEquals(userDto.getBirthday(), user.getBirthday());
         assertEquals(userDto.getDescription(), user.getDescription());
         assertEquals(userDto.getProfilePictures(), Collections.emptyList());
+        assertEquals(userDto.getLastSeen(), user.getLastSeen());
+        assertTrue(userDto.getIsOnline());
     }
 }
