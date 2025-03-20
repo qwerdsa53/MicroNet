@@ -94,7 +94,13 @@ public class UserServiceImpl implements UserService {
     }
 
     public UserDto getUserById(String authorizationHeader, Long id) {
-        Long requesterId = jwtTokenProvider.getUserIdFromToken(authorizationHeader);
+        Long requesterId;
+        if (authorizationHeader != null) {
+            requesterId = jwtTokenProvider.getUserIdFromToken(authorizationHeader);
+        } else {
+            requesterId = id;
+        }
+
         UserDto userDto = userRepository.findById(id)
                 .map(user -> {
                     Boolean isOnline = redis.isOnline("user:online:" + id).orElse(false);
@@ -129,6 +135,7 @@ public class UserServiceImpl implements UserService {
         tokenService.deleteToken(token);
     }
 
+    @Transactional
     public UserDto updateUser(
             String authorizationHeader,
             UserDto userDto,

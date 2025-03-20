@@ -21,7 +21,7 @@ spring:
     redis:
       host: ${REDIS_HOST}
     rest:
-          detection-strategy: annotated
+      detection-strategy: annotated
 springdoc:
   api-docs:
     path: /api/v1/posts/v3/api-docs

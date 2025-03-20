@@ -19,7 +19,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   data:
     rest:
-          detection-strategy: annotated
+      detection-strategy: annotated
 springdoc:
   api-docs:
     path: /api/v1/user/v3/api-docs

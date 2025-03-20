@@ -3,11 +3,13 @@ package org.example.userservice.utiles;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
 
+@Slf4j
 @Component
 public class JwtUtil {
 
@@ -27,6 +29,7 @@ public class JwtUtil {
         String token = extractToken(authorizationHeader);
         Claims claims = extractClaims(token);
         Object userId = claims.get("userId");
+        log.error("Id: {}", userId);
         if (userId instanceof Integer) {
             return ((Integer) userId).longValue();
         } else if (userId instanceof Long) {
