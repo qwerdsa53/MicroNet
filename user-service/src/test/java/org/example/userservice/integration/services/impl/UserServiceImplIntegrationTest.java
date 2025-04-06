@@ -3,7 +3,7 @@
 //import org.example.userservice.JwtTokenProvider;
 //import org.example.userservice.repo.ImageRepo;
 //import org.example.userservice.repo.UserRepository;
-//import org.example.userservice.services.ImageService;
+//import qwerdsa53.fileservice.service.ImageService;
 //import org.example.userservice.services.impl.MailServiceClient;
 //import org.example.userservice.services.impl.TokenServiceImpl;
 //import org.example.userservice.utiles.JwtUtil;

@@ -3,18 +3,17 @@ package org.example.userservice.services.impl;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.example.userservice.JwtTokenProvider;
 import org.example.userservice.exceptions.UserAlreadyExistException;
 import org.example.userservice.exceptions.UserNotFoundException;
 import org.example.userservice.model.Image;
 import org.example.userservice.model.Role;
 import org.example.userservice.model.User;
+import org.example.userservice.model.dto.FilesUrlDto;
 import org.example.userservice.model.dto.JwtResponse;
 import org.example.userservice.model.dto.UserDto;
 import org.example.userservice.repo.ImageRepo;
 import org.example.userservice.repo.UserRepository;
-import org.example.userservice.services.ImageService;
 import org.example.userservice.services.UserService;
 import org.example.userservice.utiles.JwtUtil;
 import org.example.userservice.utiles.Mapper;
@@ -24,7 +23,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -39,7 +37,6 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final TokenServiceImpl tokenService;
-    private final ImageService imageService;
     private final MailServiceClient mailServiceClient;
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisForStatus redis;
@@ -52,8 +49,8 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public CompletableFuture<JwtResponse> registerUser(
             @NotNull UserDto userDto,
-            List<MultipartFile> profilePictures
-    ) throws FileUploadException {
+            FilesUrlDto profilePictures
+    ) {
         log.info("Executing in thread: {}", Thread.currentThread().getName());
 
         if (userRepository.existsByEmail(userDto.getEmail())) {
@@ -75,7 +72,7 @@ public class UserServiceImpl implements UserService {
 
         User savedUser = userRepository.save(user);
         log.info("User: {} registered", user.getUsername());
-        addProfilePictures(profilePictures, savedUser);
+        addProfilePictures(profilePictures.getFiles(), savedUser);
 
         String token = jwtTokenProvider.generateToken(user);
 //            sendWelcomeEmailAsync(savedUser.getEmail());
@@ -139,8 +136,8 @@ public class UserServiceImpl implements UserService {
     public UserDto updateUser(
             String authorizationHeader,
             UserDto userDto,
-            List<MultipartFile> profilePictures
-    ) throws FileUploadException {
+            List<String> profilePictures
+    ) {
         userDto.setId(jwtUtil.extractUserId(authorizationHeader));
         User existingUser = userRepository.findUserWithLock(userDto.getId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -152,7 +149,6 @@ public class UserServiceImpl implements UserService {
         existingUser.setEnabled(userDto.isEnabled());
         imageRepo.deleteAll(existingUser.getProfilePictures());
         existingUser.getProfilePictures().clear();
-        imageService.deleteFolder(existingUser.getId().toString());
 
         addProfilePictures(profilePictures, existingUser);
         userRepository.save(existingUser);
@@ -196,17 +192,13 @@ public class UserServiceImpl implements UserService {
     }
 
     private void addProfilePictures(
-            List<MultipartFile> profilePictures,
+            List<String> profilePictures,
             User user
-    ) throws FileUploadException {
+    ) {
         if (profilePictures != null && !profilePictures.isEmpty()) {
-            for (MultipartFile picture : profilePictures) {
-                String url = imageService.upload(picture, user.getId());
+            for (String url : profilePictures) {
                 user.getProfilePictures().add(new Image(
                         url,
-                        picture.getOriginalFilename(),
-                        picture.getContentType(),
-                        picture.getSize(),
                         LocalDateTime.now(),
                         user
                 ));

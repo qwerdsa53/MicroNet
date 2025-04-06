@@ -49,18 +49,12 @@ class MapperImplTest {
         imageTemp1 = Image.builder()
                 .id(1L)
                 .url("http...")
-                .imageName("Name")
-                .contentType("jpg")
-                .size(1212L)
                 .uploadedAt(LocalDateTime.MIN)
                 .build();
 
         imageTemp2 = Image.builder()
                 .id(2L)
                 .url("https...")
-                .imageName("Name2")
-                .contentType("png")
-                .size(11L)
                 .uploadedAt(LocalDateTime.MIN)
                 .build();
     }

@@ -1,16 +1,14 @@
 package org.example.userservice.controllers;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.websocket.server.PathParam;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.example.userservice.JwtTokenProvider;
 import org.example.userservice.model.User;
-import org.example.userservice.model.dto.JwtResponse;
-import org.example.userservice.model.dto.LoginRequestDto;
-import org.example.userservice.model.dto.TokenDto;
-import org.example.userservice.model.dto.UserDto;
+import org.example.userservice.model.dto.*;
 import org.example.userservice.services.JwtBlackListService;
 import org.example.userservice.services.UserService;
 import org.example.userservice.services.impl.CustomAuthService;
@@ -18,9 +16,7 @@ import org.example.userservice.services.impl.MailServiceClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 
@@ -34,16 +30,17 @@ public class AuthController {
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtBlackListService jwtBlackListService;
     private final UserService userService;
+    private final ObjectMapper objectMapper;
     private final MailServiceClient mailServiceClient;
 
 
     @PostMapping(path = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @ResponseStatus(value = HttpStatus.CREATED)
+    @ResponseStatus(HttpStatus.CREATED)
     public CompletableFuture<JwtResponse> registerUser(
-            @RequestPart(name = "files", required = false) List<MultipartFile> profilePictures,
-            @RequestPart(name = "data") UserDto userDto
+            @RequestPart("data") UserDto userDto,
+            @RequestPart(name = "files", required = false) FilesUrlDto files
     ) throws FileUploadException {
-        return userService.registerUser(userDto, profilePictures);
+        return userService.registerUser(userDto, files);
     }
 
 

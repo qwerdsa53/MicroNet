@@ -1,42 +1,33 @@
 package qwerdsa53.apigateway.configs;
 
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import qwerdsa53.apigateway.props.ServicesProperties;
 
 @Configuration
+@RequiredArgsConstructor
 public class GatewayRoutesConfig {
-    @Value("${user-service.uri}")
-    private String userServiceUri;
-
-    @Value("${posts-service.uri}")
-    private String postsServiceUri;
-
-    @Value("${feed-service.uri}")
-    private String feedServiceUri;
-
-    @Value("${mail-service.uri}")
-    private String mailServiceUri;
-
-    @Value("${ws-gateway.uri}")
-    private String wsGatewayUri;
+    private final ServicesProperties properties;
 
     @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
-                .route("user-service", r -> r.path("/api/v1/user/**")
-                        .uri(userServiceUri))
+                .route("user-service", r -> r.path("/api/{version:^v[0-9]+$}/user/**")
+                        .uri(properties.getUserServiceUri()))
                 .route("ws-service", r -> r.path("/ws/{userId}")
                         .filters(f -> f.setPath("/ws/{userId}"))
-                        .uri(wsGatewayUri))
-                .route("posts-service", r -> r.path("/api/v1/posts/**")
-                        .uri(postsServiceUri))
-                .route("feed-service", r -> r.path("/api/v1/feed/**")
-                        .uri(feedServiceUri))
-                .route("mail-service", r -> r.path("/api/v1/mail/**")
-                        .uri(mailServiceUri))
+                        .uri(properties.getWsGatewayUri()))
+                .route("posts-service", r -> r.path("/api/{version:^v[0-9]+$}/posts/**")
+                        .uri(properties.getPostsServiceUri()))
+                .route("feed-service", r -> r.path("/api/{version:^v[0-9]+$}/feed/**")
+                        .uri(properties.getFeedServiceUri()))
+                .route("mail-service", r -> r.path("/api/{version:^v[0-9]+$}/mail/**")
+                        .uri(properties.getMailServiceUri()))
+                .route("file-service", r -> r.path("/api/{version:^v[0-9]+$}/file/**")
+                        .uri(properties.getFileServiceUri()))
                 .build();
     }
 }

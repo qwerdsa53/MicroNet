@@ -1,11 +1,11 @@
-package org.example.userservice.configs;
+package qwerdsa53.fileservice.config;
 
 import io.minio.MinioClient;
 import lombok.RequiredArgsConstructor;
-import org.example.userservice.props.MinioProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import qwerdsa53.fileservice.props.MinioProperties;
 
 @Configuration
 @EnableConfigurationProperties(MinioProperties.class)

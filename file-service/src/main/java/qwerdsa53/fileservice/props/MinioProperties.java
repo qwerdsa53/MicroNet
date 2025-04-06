@@ -1,4 +1,4 @@
-package org.example.userservice.props;
+package qwerdsa53.fileservice.props;
 
 
 import lombok.Data;

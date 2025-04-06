@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: file-service
+server:
+  port: 8086
+minio:
+  bucket: ${MINIO_BUCKET}
+  url: ${MINIO_URL}
+  accessKey: ${MINIO_ACCESS_KEY}
+  secretKey: ${MINIO_SECRET_KEY}
+debug: true

@@ -22,14 +22,11 @@ springdoc:
     paths-to-match: /**
 jwt:
   secret: ${SECRET}
-user-service:
-  uri: ${USER_SERVICE_URI}
-posts-service:
-  uri: ${POST_SERVICE_URI}
-feed-service:
-  uri: ${FEED_SERVICE_URI}
-mail-service:
-  uri: ${MAIL_SERVICE_URI}
-ws-gateway:
-  uri: ${WS_GATEWAY_URI}
+services:
+  userServiceUri: ${USER_SERVICE_URI}
+  postsServiceUri: ${POST_SERVICE_URI}
+  feedServiceUri: ${FEED_SERVICE_URI}
+  mailServiceUri: ${MAIL_SERVICE_URI}
+  wsGatewayUri: ${WS_GATEWAY_URI}
+  fileServiceUri: ${FILE_SERVICE_URI}
 debug: true

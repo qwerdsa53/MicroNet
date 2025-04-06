@@ -1,4 +1,4 @@
-package org.example.userservice.services.impl;
+package qwerdsa53.fileservice.service.impl;
 
 import io.minio.*;
 import io.minio.errors.MinioException;
@@ -7,10 +7,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
-import org.example.userservice.props.MinioProperties;
-import org.example.userservice.services.ImageService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import qwerdsa53.fileservice.props.MinioProperties;
+import qwerdsa53.fileservice.service.FileService;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,12 +23,12 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ImageServiceImpl implements ImageService {
+public class ImageServiceImpl implements FileService {
     private final MinioClient minioClient;
     private final MinioProperties minioProperties;
 
     @Override
-    public String upload(MultipartFile file, Long userId) throws FileUploadException {
+    public String upload(MultipartFile file) throws FileUploadException {
         try {
             createBucket();
         } catch (Exception e) {
@@ -38,7 +38,7 @@ public class ImageServiceImpl implements ImageService {
         if (file.isEmpty() || file.getOriginalFilename() == null) {
             throw new FileUploadException("File must have name.");
         }
-        String filename = generateFileName(file, userId);
+        String filename = generateFileName(file);
         InputStream inputStream;
         try {
             inputStream = file.getInputStream();
@@ -114,16 +114,9 @@ public class ImageServiceImpl implements ImageService {
     }
 
     @SneakyThrows
-    private String generateFileName(MultipartFile file, Long userId) {
+    private String generateFileName(MultipartFile file) {
         String extension = getExtension(file);
-        StringBuffer fileName = new StringBuffer();
-        fileName.append(userId)
-                .append("/")
-                .append(UUID.nameUUIDFromBytes(file.getBytes()))
-                .append(".")
-                .append(extension);
-
-        return fileName.toString();
+        return System.currentTimeMillis() + "-" + UUID.randomUUID() + "." + extension;
     }
 
     @SneakyThrows
@@ -175,5 +168,4 @@ public class ImageServiceImpl implements ImageService {
         }
         return null;
     }
-
 }

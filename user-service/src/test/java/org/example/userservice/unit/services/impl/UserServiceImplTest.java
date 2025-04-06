@@ -6,11 +6,11 @@ import org.example.userservice.exceptions.UserAlreadyExistException;
 import org.example.userservice.model.Image;
 import org.example.userservice.model.Role;
 import org.example.userservice.model.User;
+import org.example.userservice.model.dto.FilesUrlDto;
 import org.example.userservice.model.dto.JwtResponse;
 import org.example.userservice.model.dto.UserDto;
 import org.example.userservice.repo.ImageRepo;
 import org.example.userservice.repo.UserRepository;
-import org.example.userservice.services.ImageService;
 import org.example.userservice.services.impl.MailServiceClient;
 import org.example.userservice.services.impl.TokenServiceImpl;
 import org.example.userservice.services.impl.UserServiceImpl;
@@ -24,7 +24,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -46,9 +45,6 @@ public class UserServiceImplTest {
 
     @Mock
     private TokenServiceImpl tokenService;
-
-    @Mock
-    private ImageService imageService;
 
     @Mock
     private MailServiceClient mailServiceClient;
@@ -95,7 +91,10 @@ public class UserServiceImplTest {
                 "image/png",
                 new byte[]{}
         );
-        List<MultipartFile> pictures = List.of(file1, file2);
+        FilesUrlDto pictures = new FilesUrlDto(List.of(
+                "http://localhost:9000/pictures/5/7941dd98-2304-3590-980d-c990fd85ac2b.png",
+                "http://localhost:9000/pictures/5/7941dd98-2304-1231-980d-c990fd85ac3b.png"
+        ));
 
         User mockUser = User.builder()
                 .id(1L)
@@ -117,8 +116,6 @@ public class UserServiceImplTest {
                 .thenReturn("fake-jwt-token");
         when(userRepository.save(any()))
                 .thenReturn(mockUser);
-        when(imageService.upload(any(MultipartFile.class), anyLong()))
-                .thenReturn("http://fake-url.com/image.png");
 
         CompletableFuture<JwtResponse> response = userService.registerUser(dto, pictures);
 
@@ -127,8 +124,6 @@ public class UserServiceImplTest {
         assertNotNull(response.get().getAccessToken());
 
         verify(userRepository, times(1)).save(any(User.class));
-        verify(imageService, times(2))
-                .upload(any(MultipartFile.class), anyLong());
     }
 
     @Test
@@ -142,56 +137,12 @@ public class UserServiceImplTest {
         when(userRepository.existsByEmail(dto.getEmail()))
                 .thenReturn(true);
 
-        assertThrows(UserAlreadyExistException.class, () -> userService.registerUser(dto, List.of()));
+        assertThrows(UserAlreadyExistException.class, () -> userService.registerUser(dto, new FilesUrlDto(List.of())));
 
         verify(userRepository, never()).save(any(User.class));
-        verify(imageService, never())
-                .upload(any(MultipartFile.class), anyLong());
+
     }
 
-    @Test
-    void registerUser_fileUploadError() throws FileUploadException {
-        UserDto dto = UserDto.builder()
-                .username("user-test")
-                .email("user@gmail.com")
-                .rawPassword("psswd")
-                .build();
-
-        MockMultipartFile file = new MockMultipartFile(
-                "file1-test",
-                "file1-origName",
-                "image/png",
-                new byte[]{}
-        );
-        List<MultipartFile> pictures = List.of(file);
-
-        User mockUser = User.builder()
-                .id(1L)
-                .username(dto.getUsername())
-                .password("hashed-password")
-                .email(dto.getEmail())
-                .profilePictures(new ArrayList<>())
-                .roles(Set.of(Role.ROLE_USER))
-                .birthday(dto.getBirthday())
-                .description(dto.getDescription())
-                .enabled(false)
-                .build();
-
-        when(userRepository.existsByEmail(dto.getEmail()))
-                .thenReturn(false);
-        when(userRepository.save(any())).thenReturn(mockUser);
-        when(passwordEncoder.encode(dto.getRawPassword()))
-                .thenReturn("hashed-password");
-        when(imageService.upload(any(MultipartFile.class), anyLong()))
-                .thenThrow(new FileUploadException("Upload failed"));
-
-        assertThrows(FileUploadException.class, () -> userService.registerUser(dto, pictures));
-
-        verify(userRepository, times(1))
-                .save(any(User.class));
-        verify(imageService, times(1))
-                .upload(any(MultipartFile.class), anyLong());
-    }
 
     @Test
     void registerUser_verifiesServiceCalls() throws FileUploadException, ExecutionException, InterruptedException {
@@ -224,18 +175,14 @@ public class UserServiceImplTest {
         when(userRepository.save(any())).thenReturn(mockUser);
         when(passwordEncoder.encode(dto.getRawPassword()))
                 .thenReturn("hashed-password");
-        when(imageService.upload(any(MultipartFile.class), anyLong()))
-                .thenReturn("fake-url");
         when(jwtTokenProvider.generateToken(any(User.class)))
                 .thenReturn("fake-jwt-token");
 
-        CompletableFuture<JwtResponse> response = userService.registerUser(dto, List.of(file1));
+        CompletableFuture<JwtResponse> response = userService.registerUser(dto, new FilesUrlDto(List.of("http://localhost:9000/pictures/5/7941dd98-2304-3590-980d-c990fd85ac2b.png")));
         response.get();
 
         verify(userRepository, times(1))
                 .save(any(User.class));
-        verify(imageService, times(1))
-                .upload(any(MultipartFile.class), anyLong());
         verify(jwtTokenProvider, times(1))
                 .generateToken(any(User.class));
     }

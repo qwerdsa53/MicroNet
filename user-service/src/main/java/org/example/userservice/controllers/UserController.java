@@ -3,13 +3,11 @@ package org.example.userservice.controllers;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
+import org.example.userservice.model.dto.FilesUrlDto;
 import org.example.userservice.model.dto.UserDto;
 import org.example.userservice.services.UserService;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -41,10 +39,10 @@ public class UserController {
     @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public UserDto updateUser(
             @RequestHeader("Authorization") String authorizationHeader,
-            @RequestPart(name = "files", required = false) List<MultipartFile> profilePictures,
+            @RequestPart(name = "files", required = false) FilesUrlDto profilePictures,
             @RequestPart(name = "data") UserDto userDto
     ) throws FileUploadException {
-        return userService.updateUser(authorizationHeader, userDto, profilePictures);
+        return userService.updateUser(authorizationHeader, userDto, profilePictures.getFiles());
     }
 
 }
