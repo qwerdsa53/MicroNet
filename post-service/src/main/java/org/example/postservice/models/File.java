@@ -20,15 +20,6 @@ public class File {
     private String url;
 
     @Column(nullable = false)
-    private String fileName;
-
-    @Column(nullable = false)
-    private String contentType;
-
-    @Column(nullable = false)
-    private Long size;
-
-    @Column(nullable = false)
     private LocalDateTime uploadedAt = LocalDateTime.now();
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -36,11 +27,8 @@ public class File {
     @JsonIgnore
     private Post post;
 
-    public File(String url, String fileName, String contentType, Long size, LocalDateTime uploadedAt, Post post) {
+    public File(String url, LocalDateTime uploadedAt, Post post) {
         this.url = url;
-        this.fileName = fileName;
-        this.contentType = contentType;
-        this.size = size;
         this.uploadedAt = uploadedAt;
         this.post = post;
     }

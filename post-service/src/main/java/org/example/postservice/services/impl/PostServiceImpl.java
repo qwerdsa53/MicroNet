@@ -45,7 +45,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Transactional
-    public PostDto addPostByUserId(PostDto postDto, Long userId, List<MultipartFile> files) {
+    public PostDto addPostByUserId(PostDto postDto, Long userId, List<String> urls) {
         User user = new User();
         user.setId(userId);
 
@@ -74,14 +74,10 @@ public class PostServiceImpl implements PostService {
 
 
         try {
-            if (files != null && !files.isEmpty()) {
-                for (MultipartFile file : files) {
-                    String url = fileService.upload(file, userId, postId);
+            if (urls != null && !urls.isEmpty()) {
+                for (String url : urls) {
                     post.getFiles().add(new File(
                             url,
-                            file.getOriginalFilename(),
-                            file.getContentType(),
-                            file.getSize(),
                             LocalDateTime.now(),
                             post));
                 }
@@ -96,7 +92,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Transactional
-    public PostDto updatePost(PostDto postDto, Long userId, List<MultipartFile> files) {
+    public PostDto updatePost(PostDto postDto, Long userId, List<String> urls) {
         Post post = postRepo.findByIdAndUserId(postDto.getId(), userId)
                 .orElseThrow(() -> new PostNotFoundException("Post not found or access denied"));
 
@@ -120,14 +116,10 @@ public class PostServiceImpl implements PostService {
         post.getFiles().clear();
 
 
-        if (files != null) {
-            for (MultipartFile file : files) {
-                String url = fileService.upload(file, userId, postDto.getId());
+        if (urls != null) {
+            for (String url : urls) {
                 post.getFiles().add(new File(
                         url,
-                        file.getOriginalFilename(),
-                        file.getContentType(),
-                        file.getSize(),
                         LocalDateTime.now(),
                         post));
             }

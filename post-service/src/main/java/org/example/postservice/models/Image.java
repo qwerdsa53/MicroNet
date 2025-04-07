@@ -24,15 +24,6 @@ public class Image implements Cloneable {
     private String url;
 
     @Column(nullable = false)
-    private String imageName;
-
-    @Column(nullable = false)
-    private String contentType;
-
-    @Column(nullable = false)
-    private Long size;
-
-    @Column(nullable = false)
     private LocalDateTime uploadedAt = LocalDateTime.now();
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -40,11 +31,8 @@ public class Image implements Cloneable {
     @JsonIgnore
     private User user;
 
-    public Image(String url, String imageName, String contentType, Long size, LocalDateTime uploadedAt, User user) {
+    public Image(String url, LocalDateTime uploadedAt, User user) {
         this.url = url;
-        this.imageName = imageName;
-        this.contentType = contentType;
-        this.size = size;
         this.uploadedAt = uploadedAt;
         this.user = user;
     }

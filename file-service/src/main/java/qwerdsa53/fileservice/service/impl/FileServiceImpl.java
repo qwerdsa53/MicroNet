@@ -1,12 +1,14 @@
 package qwerdsa53.fileservice.service.impl;
 
-import io.minio.*;
+import io.minio.MinioClient;
+import io.minio.PutObjectArgs;
+import io.minio.RemoveObjectArgs;
 import io.minio.errors.MinioException;
-import io.minio.messages.Item;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import qwerdsa53.fileservice.props.MinioProperties;
@@ -19,22 +21,18 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ImageServiceImpl implements FileService {
+public class FileServiceImpl implements FileService {
     private final MinioClient minioClient;
     private final MinioProperties minioProperties;
 
     @Override
-    public String upload(MultipartFile file) throws FileUploadException {
-        try {
-            createBucket();
-        } catch (Exception e) {
-            throw new FileUploadException("File upload failed: "
-                    + e.getMessage());
-        }
+    @Async("minioExecutor")
+    public CompletableFuture<String> upload(MultipartFile file, String bucket) throws FileUploadException {
         if (file.isEmpty() || file.getOriginalFilename() == null) {
             throw new FileUploadException("File must have name.");
         }
@@ -46,19 +44,19 @@ public class ImageServiceImpl implements FileService {
             throw new FileUploadException("File upload failed: "
                     + e.getMessage());
         }
-        saveImage(inputStream, filename);
-        return getFileUrl(filename);
+        saveFile(inputStream, file, filename, bucket);
+        return CompletableFuture.completedFuture(getFileUrl(filename, bucket));
     }
 
     @Override
-    public void deleteFile(String filePath) {
+    public void deleteFile(String filePath, String bucket) {
         if (filePath.contains("https://") || filePath.contains("http://")) {
-            filePath = extractFilePath(filePath, minioProperties.getBucket());
+            filePath = extractFilePath(filePath, bucket);
         }
         try {
             minioClient.removeObject(
                     RemoveObjectArgs.builder()
-                            .bucket(minioProperties.getBucket())
+                            .bucket(bucket)
                             .object(filePath)
                             .build()
             );
@@ -67,43 +65,10 @@ public class ImageServiceImpl implements FileService {
         }
     }
 
-
-    @Override
-    public void deleteFolder(String userId) {
-        try {
-            Iterable<Result<Item>> results = minioClient.listObjects(
-                    ListObjectsArgs.builder()
-                            .bucket(minioProperties.getBucket())
-                            .prefix(userId + "/")
-                            .recursive(true)
-                            .build()
-            );
-            for (Result<Item> result : results) {
-                String filePath = result.get().objectName();
-                deleteFile(filePath);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Error deleting folder: " + e.getMessage(), e);
-        }
-    }
-
-    @SneakyThrows
-    private void createBucket() {
-        boolean found = minioClient.bucketExists(BucketExistsArgs.builder()
-                .bucket(minioProperties.getBucket())
-                .build());
-
-        if (!found) {
-            minioClient.makeBucket(MakeBucketArgs.builder()
-                    .bucket(minioProperties.getBucket())
-                    .build());
-        }
-    }
-
-    private String getFileUrl(String filename) {
+    private String getFileUrl(String filename, String bucket) {
         return String.format("%s/%s/%s",
                 minioProperties.getUrl(),
-                minioProperties.getBucket(),
+                bucket,
                 filename);
     }
 
@@ -120,10 +85,15 @@ public class ImageServiceImpl implements FileService {
     }
 
     @SneakyThrows
-    private void saveImage(final InputStream inputStream, final String fileName) {
+    private void saveFile(
+            final InputStream inputStream,
+            final MultipartFile file,
+            final String fileName,
+            String bucket
+    ) {
         minioClient.putObject(PutObjectArgs.builder()
-                .stream(inputStream, inputStream.available(), -1)
-                .bucket(minioProperties.getBucket())
+                .stream(inputStream, file.getSize(), -1)
+                .bucket(bucket)
                 .object(fileName)
                 .build());
     }
@@ -145,27 +115,5 @@ public class ImageServiceImpl implements FileService {
         } catch (Exception e) {
             throw new RuntimeException("Error while getting folder path from URL: " + filePath, e);
         }
-    }
-
-    private String extractFolderPath(String fileUrl, String bucketName) {
-        try {
-            URI uri = new URI(fileUrl);
-            String path = uri.getPath();
-
-            if (path.startsWith("/")) {
-                path = path.substring(1);
-            }
-            if (path.startsWith(bucketName + "/")) {
-                path = path.substring(bucketName.length() + 1);
-            }
-
-            int lastSlashIndex = path.lastIndexOf('/');
-            if (lastSlashIndex > 0) {
-                return path.substring(0, lastSlashIndex);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Error while getting folder path from URL: " + fileUrl, e);
-        }
-        return null;
     }
 }

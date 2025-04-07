@@ -10,9 +10,9 @@ public interface PostService {
 
     List<PostDto> getAllPostsByUserId(Long userId);
 
-    PostDto addPostByUserId(PostDto postDto, Long userId, List<MultipartFile> files);
+    PostDto addPostByUserId(PostDto postDto, Long userId, List<String> files);
 
-    PostDto updatePost(PostDto postDto, Long userId, List<MultipartFile> files);
+    PostDto updatePost(PostDto postDto, Long userId, List<String> files);
 
     void deletePost(Long postId, Long userId);
 

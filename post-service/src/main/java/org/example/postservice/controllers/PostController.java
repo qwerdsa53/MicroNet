@@ -2,6 +2,7 @@ package org.example.postservice.controllers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.postservice.models.dto.FilesUrlDto;
 import org.example.postservice.models.dto.PostDto;
 import org.example.postservice.services.LikeService;
 import org.example.postservice.services.PostService;
@@ -36,23 +37,23 @@ public class PostController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public PostDto addPost(
-            @RequestPart(name = "files", required = false) Optional<List<MultipartFile>> files,
+            @RequestPart(name = "files", required = false) Optional<FilesUrlDto> files,
             @RequestPart(name = "data") PostDto postDto,
             @RequestHeader("Authorization") String authorizationHeader
     ) {
         Long userId = jwtUtil.extractUserId(authorizationHeader);
-        List<MultipartFile> filesList = files.orElse(Collections.emptyList());
+        List<String> filesList = files.orElse(new FilesUrlDto(Collections.emptyList())).getFiles();
         return postService.addPostByUserId(postDto, userId, filesList);
     }
 
     @PutMapping
     public PostDto updatePostByUserId(
-            @RequestPart(name = "files", required = false) Optional<List<MultipartFile>> files,
+            @RequestPart(name = "files", required = false) Optional<List<String>> files,
             @RequestPart(name = "data") PostDto postDto,
             @RequestHeader("Authorization") String authorizationHeader
     ) {
         Long userId = jwtUtil.extractUserId(authorizationHeader);
-        List<MultipartFile> filesList = files.orElse(Collections.emptyList());
+        List<String> filesList = files.orElse(Collections.emptyList());
         return postService.updatePost(postDto, userId, filesList);
     }
 
