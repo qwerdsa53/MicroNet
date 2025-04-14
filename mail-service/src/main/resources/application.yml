@@ -24,11 +24,9 @@ spring:
           connectiontimeout: 50000
           timeout: 50000
           writetimeout: 50000
-
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
 server:
   port: 8090
 
 debug: true
-
-YANDEX_EMAIL: ${YANDEX_EMAIL}
-

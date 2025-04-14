@@ -1,6 +1,5 @@
 package org.example.postservice.models.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

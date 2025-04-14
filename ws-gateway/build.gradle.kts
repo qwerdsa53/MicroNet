@@ -21,9 +21,12 @@ configurations {
 
 repositories {
     mavenCentral()
+    mavenLocal()
+    maven { url = uri("https://jitpack.io") }
 }
 
 dependencies {
+    implementation("com.github.qwerdsa53.CMS:shared:v1.0.0")
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.2")

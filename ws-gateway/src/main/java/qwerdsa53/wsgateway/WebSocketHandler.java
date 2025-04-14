@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
+import qwerdsa53.wsgateway.models.dto.StatusUpdateDTO;
 
 import java.time.LocalDateTime;
 import java.util.Objects;

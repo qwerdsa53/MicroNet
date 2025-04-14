@@ -1,6 +1,5 @@
 package org.example.userservice.unit.services.impl;
 
-import org.example.userservice.model.User;
 import org.example.userservice.model.dto.LiteUserDto;
 import org.example.userservice.repo.UserRepository;
 import org.example.userservice.services.impl.BlackListServiceImpl;
@@ -15,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import qwerdsa53.shared.model.entity.User;
 
 import java.util.HashSet;
 import java.util.List;

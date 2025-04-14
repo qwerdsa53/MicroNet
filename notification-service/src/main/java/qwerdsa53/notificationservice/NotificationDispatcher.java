@@ -7,8 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
-import qwerdsa53.notificationservice.models.notifications.NotificationMessage;
 import qwerdsa53.notificationservice.services.NotificationService;
+import qwerdsa53.shared.model.notifications.NotificationMessage;
 
 @Component
 @Slf4j

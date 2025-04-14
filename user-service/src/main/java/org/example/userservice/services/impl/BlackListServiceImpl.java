@@ -2,7 +2,6 @@ package org.example.userservice.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.example.userservice.exceptions.UserNotFoundException;
-import org.example.userservice.model.User;
 import org.example.userservice.model.dto.LiteUserDto;
 import org.example.userservice.repo.UserRepository;
 import org.example.userservice.services.BlackListService;
@@ -15,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import qwerdsa53.shared.model.entity.User;
 
 import java.util.Set;
 

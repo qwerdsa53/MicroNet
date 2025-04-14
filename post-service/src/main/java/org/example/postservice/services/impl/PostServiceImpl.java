@@ -4,22 +4,20 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.postservice.exceptions.*;
-import org.example.postservice.models.File;
-import org.example.postservice.models.Post;
-import org.example.postservice.models.Tag;
-import org.example.postservice.models.User;
-import org.example.postservice.models.dto.PostDto;
 import org.example.postservice.repo.FileRepo;
 import org.example.postservice.repo.PostRepo;
 import org.example.postservice.repo.TagRepo;
-import org.example.postservice.services.FileService;
 import org.example.postservice.services.PostService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+import qwerdsa53.shared.model.dto.PostDto;
+import qwerdsa53.shared.model.entity.File;
+import qwerdsa53.shared.model.entity.Post;
+import qwerdsa53.shared.model.entity.Tag;
+import qwerdsa53.shared.model.entity.User;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -32,7 +30,6 @@ public class PostServiceImpl implements PostService {
     private final PostRepo postRepo;
     private final TagRepo tagRepo;
     private final FileRepo fileRepo;
-    private final FileService fileService;
 
     public List<PostDto> getAllPostsByUserId(Long userId) {
         try {
@@ -70,7 +67,6 @@ public class PostServiceImpl implements PostService {
                 .build();
 
         post = postRepo.save(post);
-        long postId = post.getId();
 
 
         try {
@@ -84,7 +80,6 @@ public class PostServiceImpl implements PostService {
             }
             return convertToDto(post);
         } catch (FileUploadException e) {
-            fileService.deleteFolder(post.getFiles().get(0).getUrl());
             throw new FileUploadException("Error uploading files: " + e.getMessage());
         } catch (Exception e) {
             throw new PostSaveException("Error while saving post");
@@ -109,9 +104,6 @@ public class PostServiceImpl implements PostService {
             post.setTags(new ArrayList<>());
         }
 
-        if (!post.getFiles().isEmpty()) {
-            fileService.deleteFolder(post.getFiles().get(0).getUrl());
-        }
         fileRepo.deleteAll(post.getFiles());
         post.getFiles().clear();
 
@@ -133,9 +125,6 @@ public class PostServiceImpl implements PostService {
             Post post = postRepo.findByIdAndUserId(postId, userId)
                     .orElseThrow(() -> new PostNotFoundException("Post not found or access denied"));
             post.getTags().clear();
-            if (!post.getFiles().isEmpty()) {
-                fileService.deleteFolder(post.getFiles().get(0).getUrl());
-            }
             postRepo.delete(post);
         } catch (PostNotFoundException e) {
             throw new PostNotFoundException(e.getMessage());

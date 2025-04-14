@@ -3,9 +3,6 @@ package org.example.userservice.unit.services.impl;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.example.userservice.JwtTokenProvider;
 import org.example.userservice.exceptions.UserAlreadyExistException;
-import org.example.userservice.model.Image;
-import org.example.userservice.model.Role;
-import org.example.userservice.model.User;
 import org.example.userservice.model.dto.FilesUrlDto;
 import org.example.userservice.model.dto.JwtResponse;
 import org.example.userservice.model.dto.UserDto;
@@ -14,7 +11,6 @@ import org.example.userservice.repo.UserRepository;
 import org.example.userservice.services.impl.MailServiceClient;
 import org.example.userservice.services.impl.TokenServiceImpl;
 import org.example.userservice.services.impl.UserServiceImpl;
-import org.example.userservice.utiles.JwtUtil;
 import org.example.userservice.utiles.Mapper;
 import org.example.userservice.utiles.RedisForStatus;
 import org.junit.jupiter.api.Test;
@@ -24,6 +20,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import qwerdsa53.shared.model.entity.Image;
+import qwerdsa53.shared.model.entity.User;
+import qwerdsa53.shared.model.type.Role;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -58,8 +57,6 @@ public class UserServiceImplTest {
     @Mock
     private Mapper mapper;
 
-    @Mock
-    private JwtUtil jwtUtil;
 
     @Mock
     private RedisForStatus redis;

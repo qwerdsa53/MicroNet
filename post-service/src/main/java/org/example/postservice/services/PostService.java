@@ -1,8 +1,7 @@
 package org.example.postservice.services;
 
-import org.example.postservice.models.dto.PostDto;
 import org.springframework.data.domain.Page;
-import org.springframework.web.multipart.MultipartFile;
+import qwerdsa53.shared.model.dto.PostDto;
 
 import java.util.List;
 

@@ -1,28 +1,28 @@
 package org.example.userservice.services.impl;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import qwerdsa53.shared.model.dto.MailRequestDto;
+import qwerdsa53.shared.model.type.MailType;
 
 @Service
-@RequiredArgsConstructor
 public class MailServiceClient {
-    @Value("${mail-service.uri}")
-    private String mailServiceUri;
+    private final KafkaTemplate<String, MailRequestDto> kafkaTemplate;
 
-    private final RestTemplate restTemplate;
+    private static final String MAIL_SERVICE_TOPIC = "mail-service";
 
-    public void sendEmail(String email) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.TEXT_PLAIN);
-        headers.set("X-API-KEY", "SECRET");
-        String mailServiceUrl = mailServiceUri + "/api/v1/mail/confirm";
-        HttpEntity<String> requestEntity = new HttpEntity<>(email, headers);
-        restTemplate.exchange(mailServiceUrl, HttpMethod.POST, requestEntity, String.class);
+    public MailServiceClient(@Qualifier("mailKafkaTemplate") KafkaTemplate<String, MailRequestDto> kafkaTemplate) {
+        this.kafkaTemplate = kafkaTemplate;
+    }
+
+    public void sendWelcomeEmail(String email) {
+        MailRequestDto mailRequestDto = createMailRequest(email);
+
+        kafkaTemplate.send(MAIL_SERVICE_TOPIC, mailRequestDto);
+    }
+
+    private MailRequestDto createMailRequest(String email) {
+        return new MailRequestDto(email, MailType.REGISTRATION);
     }
 }

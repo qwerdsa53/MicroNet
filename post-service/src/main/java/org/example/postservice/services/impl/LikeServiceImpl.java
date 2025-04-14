@@ -5,16 +5,16 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.postservice.exceptions.PostLikeException;
 import org.example.postservice.exceptions.PostNotFoundException;
-import org.example.postservice.models.Like;
-import org.example.postservice.models.NOTIFICATION_STATUS;
-import org.example.postservice.models.Post;
-import org.example.postservice.models.User;
-import org.example.postservice.models.notifications.LikeNotification;
 import org.example.postservice.repo.LikeRepo;
 import org.example.postservice.repo.PostRepo;
 import org.example.postservice.services.LikeService;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import qwerdsa53.shared.model.entity.Like;
+import qwerdsa53.shared.model.entity.Post;
+import qwerdsa53.shared.model.entity.User;
+import qwerdsa53.shared.model.notification.LikeNotification;
+import qwerdsa53.shared.model.type.NOTIFICATION_STATUS;
 
 import java.time.LocalDateTime;
 

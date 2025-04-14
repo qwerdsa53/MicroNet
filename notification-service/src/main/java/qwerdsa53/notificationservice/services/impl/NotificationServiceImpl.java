@@ -2,10 +2,10 @@ package qwerdsa53.notificationservice.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import qwerdsa53.notificationservice.models.NOTIFICATION_STATUS;
-import qwerdsa53.notificationservice.models.notifications.NotificationMessage;
 import qwerdsa53.notificationservice.repo.NotificationRepository;
 import qwerdsa53.notificationservice.services.NotificationService;
+import qwerdsa53.shared.model.NOTIFICATION_STATUS;
+import qwerdsa53.shared.model.notifications.NotificationMessage;
 
 import java.time.LocalDateTime;
 import java.util.List;

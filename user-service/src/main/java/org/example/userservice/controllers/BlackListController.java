@@ -1,9 +1,9 @@
 package org.example.userservice.controllers;
 
 import lombok.RequiredArgsConstructor;
+import org.example.userservice.JwtTokenProvider;
 import org.example.userservice.model.dto.LiteUserDto;
 import org.example.userservice.services.BlackListService;
-import org.example.userservice.utiles.JwtUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -13,14 +13,14 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class BlackListController {
     private final BlackListService blackListService;
-    private final JwtUtil jwtUtil;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping()
     public Page<LiteUserDto> getBlackListedUsers(
             @RequestHeader("Authorization") String authorizationHeader,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        Long userId = jwtUtil.extractUserId(authorizationHeader);
+        Long userId = jwtTokenProvider.getUserIdFromToken(authorizationHeader);
         return blackListService.getBlackList(userId, page, size);
     }
 
@@ -29,7 +29,7 @@ public class BlackListController {
     public void blockUser(
             @RequestHeader("Authorization") String authorizationHeader,
             @PathVariable Long targetUserId) {
-        Long userId = jwtUtil.extractUserId(authorizationHeader);
+        Long userId = jwtTokenProvider.getUserIdFromToken(authorizationHeader);
         blackListService.addToBlackList(userId, targetUserId);
     }
 
@@ -38,7 +38,7 @@ public class BlackListController {
             @RequestHeader("Authorization") String authorizationHeader,
             @PathVariable Long targetUserId
     ) {
-        Long userId = jwtUtil.extractUserId(authorizationHeader);
+        Long userId = jwtTokenProvider.getUserIdFromToken(authorizationHeader);
         blackListService.removeFromBlackList(userId, targetUserId);
     }
 }
