@@ -6,16 +6,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.userservice.JwtTokenProvider;
 import org.example.userservice.exceptions.UserAlreadyExistException;
 import org.example.userservice.exceptions.UserNotFoundException;
-import org.example.userservice.model.Image;
-import org.example.userservice.model.Role;
-import org.example.userservice.model.User;
 import org.example.userservice.model.dto.FilesUrlDto;
 import org.example.userservice.model.dto.JwtResponse;
 import org.example.userservice.model.dto.UserDto;
 import org.example.userservice.repo.ImageRepo;
 import org.example.userservice.repo.UserRepository;
 import org.example.userservice.services.UserService;
-import org.example.userservice.utiles.JwtUtil;
 import org.example.userservice.utiles.Mapper;
 import org.example.userservice.utiles.RedisForStatus;
 import org.jetbrains.annotations.NotNull;
@@ -23,6 +19,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import qwerdsa53.shared.model.entity.Image;
+import qwerdsa53.shared.model.entity.User;
+import qwerdsa53.shared.model.type.Role;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -42,8 +41,6 @@ public class UserServiceImpl implements UserService {
     private final RedisForStatus redis;
     private final ImageRepo imageRepo;
     private final Mapper mapper;
-    private final JwtUtil jwtUtil;
-
 
     @Async("asyncExecutor")
     @Transactional
@@ -75,7 +72,7 @@ public class UserServiceImpl implements UserService {
         addProfilePictures(profilePictures.getFiles(), savedUser);
 
         String token = jwtTokenProvider.generateToken(user);
-//            sendWelcomeEmailAsync(savedUser.getEmail());
+        mailServiceClient.sendWelcomeEmail(savedUser.getEmail());
         return CompletableFuture.completedFuture(new JwtResponse(
                 savedUser.getId(),
                 savedUser.getUsername(),
@@ -138,7 +135,7 @@ public class UserServiceImpl implements UserService {
             UserDto userDto,
             List<String> profilePictures
     ) {
-        userDto.setId(jwtUtil.extractUserId(authorizationHeader));
+        userDto.setId(jwtTokenProvider.getUserIdFromToken(authorizationHeader));
         User existingUser = userRepository.findUserWithLock(userDto.getId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -179,16 +176,6 @@ public class UserServiceImpl implements UserService {
 
     private List<String> convertToDto(List<Image> images) {
         return images.stream().map(Image::getUrl).toList();
-    }
-
-    private void sendWelcomeEmailAsync(String email) {
-        CompletableFuture.runAsync(() -> {
-            try {
-                mailServiceClient.sendEmail(email);
-            } catch (Exception e) {
-                log.error("Ошибка отправки email: {}", e.getMessage());
-            }
-        });
     }
 
     private void addProfilePictures(

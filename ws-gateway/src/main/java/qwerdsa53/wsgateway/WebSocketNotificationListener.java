@@ -8,7 +8,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
-import qwerdsa53.wsgateway.models.notifications.NotificationMessage;
+import qwerdsa53.shared.model.notifications.NotificationMessage;
 
 import java.io.IOException;
 import java.util.Optional;

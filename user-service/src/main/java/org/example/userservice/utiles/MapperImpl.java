@@ -1,10 +1,11 @@
 package org.example.userservice.utiles;
 
-import org.example.userservice.model.Image;
-import org.example.userservice.model.User;
+
 import org.example.userservice.model.dto.LiteUserDto;
 import org.example.userservice.model.dto.UserDto;
 import org.springframework.stereotype.Component;
+import qwerdsa53.shared.model.entity.Image;
+import qwerdsa53.shared.model.entity.User;
 
 import java.util.Collections;
 import java.util.List;

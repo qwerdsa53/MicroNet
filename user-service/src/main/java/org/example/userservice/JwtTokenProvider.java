@@ -6,10 +6,10 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
-import org.example.userservice.model.Role;
-import org.example.userservice.model.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import qwerdsa53.shared.model.entity.User;
+import qwerdsa53.shared.model.type.Role;
 
 import java.security.Key;
 import java.util.Date;

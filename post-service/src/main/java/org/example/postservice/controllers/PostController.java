@@ -3,7 +3,6 @@ package org.example.postservice.controllers;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.postservice.models.dto.FilesUrlDto;
-import org.example.postservice.models.dto.PostDto;
 import org.example.postservice.services.LikeService;
 import org.example.postservice.services.PostService;
 import org.example.postservice.utiles.JwtUtil;
@@ -11,7 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+import qwerdsa53.shared.model.dto.PostDto;
 
 import java.util.Collections;
 import java.util.List;

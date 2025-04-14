@@ -1,8 +1,8 @@
 package org.example.userservice.utiles;
 
-import org.example.userservice.model.User;
 import org.example.userservice.model.dto.LiteUserDto;
 import org.example.userservice.model.dto.UserDto;
+import qwerdsa53.shared.model.entity.User;
 
 public interface Mapper {
 

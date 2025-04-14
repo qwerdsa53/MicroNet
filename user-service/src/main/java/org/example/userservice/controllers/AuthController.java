@@ -7,15 +7,15 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.example.userservice.JwtTokenProvider;
-import org.example.userservice.model.User;
 import org.example.userservice.model.dto.*;
 import org.example.userservice.services.JwtBlackListService;
 import org.example.userservice.services.UserService;
 import org.example.userservice.services.impl.CustomAuthService;
-import org.example.userservice.services.impl.MailServiceClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
+import qwerdsa53.shared.model.entity.User;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -30,9 +30,7 @@ public class AuthController {
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtBlackListService jwtBlackListService;
     private final UserService userService;
-    private final ObjectMapper objectMapper;
-    private final MailServiceClient mailServiceClient;
-
+    private final KafkaTemplate<String, String> kafkaTemplate;
 
     @PostMapping(path = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
@@ -55,7 +53,7 @@ public class AuthController {
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void sendConfirmEmail(@RequestHeader("Authorization") String authorizationHeader) {
         String email = userService.getUserInfo(authorizationHeader).getEmail();
-        mailServiceClient.sendEmail(email);
+        kafkaTemplate.send("mail-service", email);
     }
 
     @PostMapping("/confirm")

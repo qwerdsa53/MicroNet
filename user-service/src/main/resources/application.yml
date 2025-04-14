@@ -20,6 +20,8 @@ spring:
   data:
     rest:
       detection-strategy: annotated
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
 springdoc:
   api-docs:
     path: /api/v1/user/v3/api-docs

@@ -1,15 +1,15 @@
 package org.example.userservice.unit.utiles;
 
 
-import org.example.userservice.model.Image;
-import org.example.userservice.model.Role;
-import org.example.userservice.model.User;
 import org.example.userservice.model.dto.LiteUserDto;
 import org.example.userservice.model.dto.UserDto;
 import org.example.userservice.utiles.Mapper;
 import org.example.userservice.utiles.MapperImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import qwerdsa53.shared.model.entity.Image;
+import qwerdsa53.shared.model.entity.User;
+import qwerdsa53.shared.model.type.Role;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

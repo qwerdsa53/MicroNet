@@ -1,6 +1,7 @@
 package qwerdsa53.notificationservice.services;
 
-import qwerdsa53.notificationservice.models.notifications.NotificationMessage;
+
+import qwerdsa53.shared.model.notifications.NotificationMessage;
 
 import java.util.List;
 

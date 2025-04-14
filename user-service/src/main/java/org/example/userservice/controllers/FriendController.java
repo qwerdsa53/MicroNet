@@ -1,9 +1,9 @@
 package org.example.userservice.controllers;
 
 import lombok.RequiredArgsConstructor;
+import org.example.userservice.JwtTokenProvider;
 import org.example.userservice.model.dto.LiteUserDto;
 import org.example.userservice.services.FriendService;
-import org.example.userservice.utiles.JwtUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -13,14 +13,14 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class FriendController {
     private final FriendService friendService;
-    private final JwtUtil jwtUtil;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping()
     public Page<LiteUserDto> getFriends(
             @RequestHeader("Authorization") String authorizationHeader,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        Long userId = jwtUtil.extractUserId(authorizationHeader);
+        Long userId = jwtTokenProvider.getUserIdFromToken(authorizationHeader);
         return friendService.getFriends(userId, page, size);
     }
 
@@ -29,7 +29,7 @@ public class FriendController {
     public void sendFriendRequest(
             @RequestHeader("Authorization") String authorizationHeader,
             @PathVariable Long targetUserId) {
-        Long userId = jwtUtil.extractUserId(authorizationHeader);
+        Long userId = jwtTokenProvider.getUserIdFromToken(authorizationHeader);
         friendService.sendFriendRequest(userId, targetUserId);
     }
 
@@ -38,7 +38,7 @@ public class FriendController {
             @RequestHeader("Authorization") String authorizationHeader,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        Long userId = jwtUtil.extractUserId(authorizationHeader);
+        Long userId = jwtTokenProvider.getUserIdFromToken(authorizationHeader);
         return friendService.getFriendRequests(userId, page, size);
     }
 
@@ -46,7 +46,7 @@ public class FriendController {
     public void acceptFriendRequest(
             @RequestHeader("Authorization") String authorizationHeader,
             @PathVariable Long requesterId) {
-        Long userId = jwtUtil.extractUserId(authorizationHeader);
+        Long userId = jwtTokenProvider.getUserIdFromToken(authorizationHeader);
         friendService.acceptFriendRequest(userId, requesterId);
     }
 
@@ -54,7 +54,7 @@ public class FriendController {
     public void rejectFriendRequest(
             @RequestHeader("Authorization") String authorizationHeader,
             @PathVariable Long target) {
-        Long requesterId = jwtUtil.extractUserId(authorizationHeader);
+        Long requesterId = jwtTokenProvider.getUserIdFromToken(authorizationHeader);
         friendService.rejectFriendRequest(requesterId, target);
     }
 
@@ -62,7 +62,7 @@ public class FriendController {
     public void deleteFriend(
             @RequestHeader("Authorization") String authorizationHeader,
             @PathVariable Long requesterId) {
-        Long userId = jwtUtil.extractUserId(authorizationHeader);
+        Long userId = jwtTokenProvider.getUserIdFromToken(authorizationHeader);
         friendService.deleteFriend(userId, requesterId);
     }
 }

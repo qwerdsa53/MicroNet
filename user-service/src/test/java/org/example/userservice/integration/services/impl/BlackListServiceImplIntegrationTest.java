@@ -1,7 +1,6 @@
 package org.example.userservice.integration.services.impl;
 
 
-import org.example.userservice.model.User;
 import org.example.userservice.model.dto.LiteUserDto;
 import org.example.userservice.repo.UserRepository;
 import org.example.userservice.services.BlackListService;
@@ -17,6 +16,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import qwerdsa53.shared.model.entity.User;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;

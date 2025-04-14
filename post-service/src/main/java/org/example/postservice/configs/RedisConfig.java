@@ -1,7 +1,6 @@
 package org.example.postservice.configs;
 
 import lombok.extern.slf4j.Slf4j;
-import org.example.postservice.models.dto.PostDto;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -13,6 +12,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.GenericToStringSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import qwerdsa53.shared.model.dto.PostDto;
 
 @Slf4j
 @Configuration

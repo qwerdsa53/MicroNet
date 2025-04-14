@@ -1,8 +1,8 @@
 package org.example.postservice.repo;
 
-import org.example.postservice.models.Like;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import qwerdsa53.shared.model.entity.Like;
 
 @Repository
 public interface LikeRepo extends JpaRepository<Like, Long> {

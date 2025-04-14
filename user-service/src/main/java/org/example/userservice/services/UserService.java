@@ -1,10 +1,10 @@
 package org.example.userservice.services;
 
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
-import org.example.userservice.model.User;
 import org.example.userservice.model.dto.FilesUrlDto;
 import org.example.userservice.model.dto.JwtResponse;
 import org.example.userservice.model.dto.UserDto;
+import qwerdsa53.shared.model.entity.User;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
