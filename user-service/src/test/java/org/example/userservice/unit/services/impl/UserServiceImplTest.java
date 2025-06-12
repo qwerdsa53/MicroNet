@@ -10,6 +10,7 @@ import org.example.userservice.repo.ImageRepo;
 import org.example.userservice.repo.UserRepository;
 import org.example.userservice.services.impl.MailServiceClient;
 import org.example.userservice.services.impl.TokenServiceImpl;
+import org.example.userservice.services.impl.UserAccessService;
 import org.example.userservice.services.impl.UserServiceImpl;
 import org.example.userservice.utiles.Mapper;
 import org.example.userservice.utiles.RedisForStatus;
@@ -57,6 +58,8 @@ public class UserServiceImplTest {
     @Mock
     private Mapper mapper;
 
+    @Mock
+    private UserAccessService userAccess;
 
     @Mock
     private RedisForStatus redis;
@@ -186,7 +189,6 @@ public class UserServiceImplTest {
 
     @Test
     void getUserInfo_success() {
-        String authorizationHeader = "Bearer token";
         Long userId = 1L;
         Boolean isOline = true;
         UserDto expectedUser = UserDto.builder()
@@ -197,27 +199,23 @@ public class UserServiceImplTest {
                 .isOnline(true)
                 .build();
 
-        when(jwtTokenProvider.getUserIdFromToken(anyString())).thenReturn(1L);
-        when(userRepository.findById(1L))
+        when(userAccess.getByIdOrThrow(1L))
                 .thenReturn(
-                        Optional.of(
-                                User.builder()
-                                        .id(1L)
-                                        .username("John Doe")
-                                        .email("john@example.com")
-                                        .profilePictures(List.of(Image.builder().url("https...").build()))
-                                        .lastSeen(LocalDateTime.MIN)
-                                        .userBlackList(new HashSet<>())
-                                        .build()
-                        )
+                        User.builder()
+                                .id(1L)
+                                .username("John Doe")
+                                .email("john@example.com")
+                                .profilePictures(List.of(Image.builder().url("https...").build()))
+                                .lastSeen(LocalDateTime.MIN)
+                                .userBlackList(new HashSet<>())
+                                .build()
                 );
         when(redis.isOnline("user:online:" + userId)).thenReturn(Optional.of(isOline));
         when(mapper.convertToDto(any(), eq(isOline))).thenReturn(expectedUser);
-
-        UserDto result = userService.getUserInfo(authorizationHeader);
+        UserDto result = userService.getUserInfo(userId);
         assertEquals(expectedUser, result);
 
-        verify(userRepository, times(1)).findById(userId);
+        verify(userAccess, times(1)).getByIdOrThrow(userId);
         verify(mapper, times(1)).convertToDto(any(), anyBoolean());
     }
 
@@ -240,16 +238,15 @@ public class UserServiceImplTest {
                 .isOnline(true)
                 .build();
 
-        when(jwtTokenProvider.getUserIdFromToken(anyString())).thenReturn(2L);
         when(redis.isOnline("user:online:" + userId)).thenReturn(Optional.of(isOline));
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(userAccess.getByIdOrThrow(userId)).thenReturn(user);
         when(mapper.convertToDto(user, true)).thenReturn(expectedUser);
 
-        UserDto result = userService.getUserById(authorizationHeader, userId);
+        UserDto result = userService.getUserById(1L, userId);
 
         assertEquals(expectedUser, result);
 
-        verify(userRepository, times(1)).findById(userId);
+        verify(userAccess, times(1)).getByIdOrThrow(userId);
         verify(mapper, times(1)).convertToDto(eq(user), anyBoolean());
     }
 }

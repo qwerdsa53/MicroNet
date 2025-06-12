@@ -17,28 +17,25 @@ public class BlackListController {
 
     @GetMapping()
     public Page<LiteUserDto> getBlackListedUsers(
-            @RequestHeader("Authorization") String authorizationHeader,
+            @RequestHeader("X-User-Id") Long userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        Long userId = jwtTokenProvider.getUserIdFromToken(authorizationHeader);
         return blackListService.getBlackList(userId, page, size);
     }
 
     @PostMapping("/{targetUserId}")
     @ResponseStatus(HttpStatus.OK)
     public void blockUser(
-            @RequestHeader("Authorization") String authorizationHeader,
+            @RequestHeader("X-User-Id") Long userId,
             @PathVariable Long targetUserId) {
-        Long userId = jwtTokenProvider.getUserIdFromToken(authorizationHeader);
         blackListService.addToBlackList(userId, targetUserId);
     }
 
     @DeleteMapping("/{targetUserId}")
     public void anBlockUser(
-            @RequestHeader("Authorization") String authorizationHeader,
+            @RequestHeader("X-User-Id") Long userId,
             @PathVariable Long targetUserId
     ) {
-        Long userId = jwtTokenProvider.getUserIdFromToken(authorizationHeader);
         blackListService.removeFromBlackList(userId, targetUserId);
     }
 }

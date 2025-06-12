@@ -29,64 +29,49 @@ import java.util.Set;
 @Slf4j
 @RequiredArgsConstructor
 public class FriendServiceImpl implements FriendService {
-
     private final UserRepository userRepository;
     private final KafkaTemplate<String, String> kafkaTemplate;
+    private final UserAccessService userAccess;
     private final ObjectMapper objectMapper;
     private final RedisForStatus redis;
     private final Mapper mapper;
 
-    @SneakyThrows
     @Override
     @Transactional()
     public void sendFriendRequest(Long requesterId, Long targetUserId) {
-        if (requesterId.equals(targetUserId)) {
-            throw new IllegalArgumentException("You can't add yourself to a friend list");
-        }
-        User requester = userRepository.findUserWithLock(requesterId)
-                .orElseThrow(() -> new UserNotFoundException("Requester not found"));
-        User targetUser = userRepository.findUserWithLock(targetUserId)
-                .orElseThrow(() -> new UserNotFoundException("Target user not found"));
+        validateRequest(requesterId, targetUserId);
+        User requester = userAccess.getByIdWithLockOrThrow(requesterId);
+        User targetUser = userAccess.getByIdWithLockOrThrow(targetUserId);
 
-        if (targetUser.getFriends().contains(requesterId)) {
-            throw new IllegalStateException("User is already a friend");
-        }
-        if (targetUser.getFriendRequests().contains(requesterId)) {
-            throw new IllegalStateException("Friend request already sent");
-        }
+        ensureNotFriends(targetUser, requesterId);
+        ensureNotInBlacklist(targetUser, requesterId);
+        ensureNoDuplicateRequest(targetUser, requesterId);
         if (requester.getFriendRequests().contains(targetUserId)) {
-            requester.getFriendRequests().remove(targetUserId);
-            targetUser.getFriends().add(requesterId);
-            requester.getFriends().add(targetUserId);
+            acceptMutualFriendRequest(requester, targetUser);
             return;
         }
-        FriendRequestNotification notification = new FriendRequestNotification(
-                targetUserId,
-                requesterId,
-                LocalDateTime.now(),
-                NOTIFICATION_STATUS.UNREAD
-        );
         targetUser.getFriendRequests().add(requesterId);
-        String payload = objectMapper
-                .writerWithDefaultPrettyPrinter()
-                .writeValueAsString(notification);
-        kafkaTemplate.send("notifications", payload);
-        log.info("Sent notification to WebSocket topic: {}", payload);
+        sendNotification(requesterId, targetUserId);
     }
 
     @Transactional(readOnly = true)
     public Page<LiteUserDto> getFriendRequests(Long userId, int page, int size) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        User user = userAccess.getByIdOrThrow(userId);
 
         Set<Long> friendRequestIds = user.getFriendRequests();
         if (friendRequestIds.isEmpty()) {
             return Page.empty(PageRequest.of(page, size));
         }
-        Pageable pageable = PageRequest.of(page, size, Sort.by("username").ascending());
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by("username").ascending()
+        );
         return userRepository.findFriendRequestsByUserId(friendRequestIds, pageable)
                 .map(requester -> {
-                    boolean isOnline = redis.isOnline("user:online:" + requester.getId()).orElse(false);
+                    boolean isOnline = redis
+                            .isOnline("user:online:" + requester.getId())
+                            .orElse(false);
                     return mapper.convertToLiteDto(requester, isOnline);
                 });
     }
@@ -94,10 +79,8 @@ public class FriendServiceImpl implements FriendService {
     @Override
     @Transactional
     public void acceptFriendRequest(Long userId, Long requesterId) {
-        User user = userRepository.findUserWithLock(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
-        User requester = userRepository.findUserWithLock(requesterId)
-                .orElseThrow(() -> new UserNotFoundException("Requester not found"));
+        User user = userAccess.getByIdWithLockOrThrow(userId);
+        User requester = userAccess.getByIdWithLockOrThrow(requesterId);
 
         if (!user.getFriendRequests().contains(requesterId)) {
             throw new IllegalStateException("No friend request from this user");
@@ -110,24 +93,17 @@ public class FriendServiceImpl implements FriendService {
 
     @Override
     @Transactional
-    public void rejectFriendRequest(Long requesterId, Long target) {
-        User user = userRepository.findById(requesterId)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
-        user.getFriendRequests().remove(target);
+    public void rejectFriendRequest(Long currentUserId, Long fromUserId) {
+        User user = getUserWithLockOrThrow(currentUserId);
+        user.getFriendRequests().remove(fromUserId);
     }
 
     @Override
     @Transactional
     public void deleteFriend(Long requesterId, Long targetId) {
-        User requester = userRepository.findUserWithLock(requesterId)
-                .orElseThrow(() -> new UserNotFoundException("Requester not found"));
-        User target = userRepository.findUserWithLock(targetId)
-                .orElseThrow(() -> new UserNotFoundException("Target user not found"));
-
-        if (!requester.getFriends().contains(targetId) || !target.getFriends().contains(requesterId)) {
-            throw new FriendNotFoundException("You are not friends with this user");
-        }
-
+        User requester = userAccess.getByIdWithLockOrThrow(requesterId);
+        User target = userAccess.getByIdWithLockOrThrow(targetId);
+        ensureIsFriends(requester, target);
         requester.getFriends().remove(targetId);
         target.getFriends().remove(requesterId);
 
@@ -137,19 +113,91 @@ public class FriendServiceImpl implements FriendService {
 
     @Transactional(readOnly = true)
     public Page<LiteUserDto> getFriends(Long userId, int page, int size) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        User user = userAccess.getByIdOrThrow(userId);
 
         Set<Long> friends = user.getFriends();
         if (friends.isEmpty()) {
             return Page.empty(PageRequest.of(page, size));
         }
-        Pageable pageable = PageRequest.of(page, size, Sort.by("username"));
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by("username")
+        );
 
         return userRepository.findFriendsByUserId(user.getFriends(), pageable)
                 .map(friend -> {
-                    boolean isOnline = redis.isOnline("user:online:" + friend.getId()).orElse(false);
+                    boolean isOnline = redis
+                            .isOnline("user:online:" + friend.getId())
+                            .orElse(false);
                     return mapper.convertToLiteDto(friend, isOnline);
                 });
     }
+
+    private void validateRequest(Long requesterId, Long targetUserId) {
+        if (requesterId.equals(targetUserId)) {
+            throw new IllegalArgumentException("You can't add yourself to a friend list");
+        }
+    }
+
+    @SneakyThrows
+    private void sendNotification(Long requesterId, Long targetUserId) {
+        FriendRequestNotification notification = new FriendRequestNotification(
+                targetUserId,
+                requesterId,
+                LocalDateTime.now(),
+                NOTIFICATION_STATUS.UNREAD
+        );
+        String payload = objectMapper
+                .writerWithDefaultPrettyPrinter()
+                .writeValueAsString(notification);
+        kafkaTemplate.send("notifications", payload);
+        log.info("Sent notification to WebSocket topic: {}", payload);
+    }
+
+    private void acceptMutualFriendRequest(User requester, User target) {
+        requester.getFriendRequests().remove(target.getId());
+        target.getFriends().add(requester.getId());
+        requester.getFriends().add(target.getId());
+    }
+
+    private User getUserOrThrow(Long id) {
+        return userRepository.findById(id).orElseThrow(() ->
+                new UserNotFoundException(
+                        String.format("User with id = %d not found", id)
+                ));
+    }
+
+    private User getUserWithLockOrThrow(Long id) {
+        return userRepository.findUserWithLock(id).orElseThrow(() ->
+                new UserNotFoundException(
+                        String.format("User with id = %d not found", id)
+                ));
+    }
+
+    private void ensureNotFriends(User user, Long otherId) {
+        if (user.getFriends().contains(otherId)) {
+            throw new IllegalStateException("User is already a friend");
+        }
+    }
+
+    private void ensureIsFriends(User requester, User target) {
+        if (!requester.getFriends().contains(target.getId())
+                || !target.getFriends().contains(target.getId())) {
+            throw new FriendNotFoundException("You are not friends with this user");
+        }
+    }
+
+    private void ensureNotInBlacklist(User user, Long otherId) {
+        if (user.getUserBlackList().contains(otherId)) {
+            throw new IllegalStateException("You are in the blacklist of this user");
+        }
+    }
+
+    private void ensureNoDuplicateRequest(User targetUser, Long requesterId) {
+        if (targetUser.getFriendRequests().contains(requesterId)) {
+            throw new IllegalStateException("Friend request already sent");
+        }
+    }
+
 }

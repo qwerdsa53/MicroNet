@@ -1,6 +1,5 @@
 package org.example.userservice.services.impl;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.userservice.JwtTokenProvider;
@@ -8,6 +7,7 @@ import org.example.userservice.exceptions.UserAlreadyExistException;
 import org.example.userservice.exceptions.UserNotFoundException;
 import org.example.userservice.model.dto.FilesUrlDto;
 import org.example.userservice.model.dto.JwtResponse;
+import org.example.userservice.model.dto.LiteUserDto;
 import org.example.userservice.model.dto.UserDto;
 import org.example.userservice.repo.ImageRepo;
 import org.example.userservice.repo.UserRepository;
@@ -39,6 +39,7 @@ public class UserServiceImpl implements UserService {
     private final MailServiceClient mailServiceClient;
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisForStatus redis;
+    private final UserAccessService userAccess;
     private final ImageRepo imageRepo;
     private final Mapper mapper;
 
@@ -82,41 +83,38 @@ public class UserServiceImpl implements UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserDto getUserInfo(String authorizationHeader) {
-        Long id = jwtTokenProvider.getUserIdFromToken(authorizationHeader);
-        return getUserById(null, id);
+    public UserDto getUserInfo(Long userId) {
+        return getUserById(userId, userId);
     }
 
-    public UserDto getUserById(String authorizationHeader, Long id) {
-        Long requesterId;
-        if (authorizationHeader != null) {
-            requesterId = jwtTokenProvider.getUserIdFromToken(authorizationHeader);
-        } else {
-            requesterId = id;
+    public UserDto getUserById(Long requesterId, Long id) {
+        User user = userAccess.getByIdOrThrow(id);
+        Boolean isOnline = redis
+                .isOnline("user:online:" + id)
+                .orElse(false);
+        if (user.getUserBlackList().contains(requesterId)) {
+            user.setBirthday(null);
+            user.setDescription(null);
+            user.setLastSeen(null);
+            user.setProfilePictures(null);
+            isOnline = null;
         }
+        return mapper.convertToDto(user, isOnline);
+    }
 
-        UserDto userDto = userRepository.findById(id)
-                .map(user -> {
-                    Boolean isOnline = redis.isOnline("user:online:" + id).orElse(false);
-                    if (user.getUserBlackList().contains(requesterId)) {
-                        user.setBirthday(null);
-                        user.setDescription(null);
-                        user.setLastSeen(null);
-                        user.setProfilePictures(null);
-                        isOnline = null;
-                    }
-                    return mapper.convertToDto(user, isOnline);
-                })
-                .orElseThrow(() -> new UserNotFoundException("user not found"));
-        log.info("User fetched from database: {}", id);
-        return userDto;
+    @Override
+    public LiteUserDto getLiteUserById(Long id) {
+        User user = userAccess.getByIdOrThrow(id);
+        Boolean isOnline = redis
+                .isOnline("user:online:" + id)
+                .orElse(false);
+        return mapper.convertToLiteDto(user, isOnline);
     }
 
 
     @Transactional
     public void deleteUser(Long id) {
-        User user = userRepository.findUserWithLock(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        User user = userAccess.getByIdWithLockOrThrow(id);
         userRepository.delete(user);
     }
 
@@ -131,13 +129,12 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     public UserDto updateUser(
-            String authorizationHeader,
+            Long userId,
             UserDto userDto,
             List<String> profilePictures
     ) {
-        userDto.setId(jwtTokenProvider.getUserIdFromToken(authorizationHeader));
-        User existingUser = userRepository.findUserWithLock(userDto.getId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        userDto.setId(userId);
+        User existingUser = userAccess.getByIdOrThrow(userId);
 
         existingUser.setUsername(userDto.getUsername());
         existingUser.setEmail(userDto.getEmail());
@@ -155,23 +152,9 @@ public class UserServiceImpl implements UserService {
     }
 
     public void updatePassword(Long userId, String newPassword) {
-        User user = userRepository.findUserWithLock(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User user = userAccess.getByIdOrThrow(userId);
         user.setPassword(newPassword);
         userRepository.save(user);
-    }
-
-    public User findUserByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-    }
-
-    private boolean hasChanges(User existingUser, UserDto userDto) {
-        return !existingUser.getUsername().equals(userDto.getUsername()) ||
-                !existingUser.getEmail().equals(userDto.getEmail()) ||
-                !existingUser.getDescription().equals(userDto.getDescription()) ||
-                !existingUser.getBirthday().equals(userDto.getBirthday()) ||
-                existingUser.isEnabled() != userDto.isEnabled();
     }
 
     private List<String> convertToDto(List<Image> images) {

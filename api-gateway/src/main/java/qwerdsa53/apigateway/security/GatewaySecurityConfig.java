@@ -37,7 +37,7 @@ public class GatewaySecurityConfig {
                         ).permitAll()
                         .matchers(exchange -> {
                             String path = exchange.getRequest().getPath().toString();
-                            return path.matches("/api/v1/user/\\d+") ?
+                            return path.matches("/api/v1/user(/lite)?/\\d+") ?
                                     ServerWebExchangeMatcher.MatchResult.match() : ServerWebExchangeMatcher.MatchResult.notMatch();
                         }).permitAll()
 

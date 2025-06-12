@@ -1,7 +1,6 @@
 package org.example.userservice.controllers;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.websocket.server.PathParam;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,8 +50,8 @@ public class AuthController {
 
     @PostMapping("/send/confirm")
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void sendConfirmEmail(@RequestHeader("Authorization") String authorizationHeader) {
-        String email = userService.getUserInfo(authorizationHeader).getEmail();
+    public void sendConfirmEmail(@RequestHeader("X-User-Id") Long userId) {
+        String email = userService.getUserInfo(userId).getEmail();
         kafkaTemplate.send("mail-service", email);
     }
 

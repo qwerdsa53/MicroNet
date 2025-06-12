@@ -3,6 +3,7 @@ package org.example.userservice.unit.services.impl;
 import org.example.userservice.model.dto.LiteUserDto;
 import org.example.userservice.repo.UserRepository;
 import org.example.userservice.services.impl.BlackListServiceImpl;
+import org.example.userservice.services.impl.UserAccessService;
 import org.example.userservice.utiles.Mapper;
 import org.example.userservice.utiles.RedisForStatus;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,6 +35,9 @@ public class BlackListServiceImplTest {
     @Mock
     private RedisForStatus redis;
 
+    @Mock
+    private UserAccessService userAccess;
+
     @InjectMocks
     private BlackListServiceImpl blackListService;
 
@@ -51,8 +55,8 @@ public class BlackListServiceImplTest {
         requester.setId(requesterId);
         requester.setUserBlackList(new HashSet<>());
 
-        when(userRepository.findUserWithLock(requesterId))
-                .thenReturn(Optional.of(requester));
+        when(userAccess.getByIdWithLockOrThrow(requesterId))
+                .thenReturn(requester);
         when(userRepository.existsById(targetId))
                 .thenReturn(true);
 
@@ -71,8 +75,8 @@ public class BlackListServiceImplTest {
         requester.setId(requesterId);
         requester.setUserBlackList(new HashSet<>(Set.of(targetId)));
 
-        when(userRepository.findUserWithLock(requesterId)).
-                thenReturn(Optional.of(requester));
+        when(userAccess.getByIdWithLockOrThrow(requesterId)).
+                thenReturn(requester);
         when(userRepository.existsById(targetId)).
                 thenReturn(true);
 
@@ -90,8 +94,8 @@ public class BlackListServiceImplTest {
         requester.setId(requesterId);
         requester.setUserBlackList(new HashSet<>(Set.of(targetId)));
 
-        when(userRepository.findUserWithLock(requesterId))
-                .thenReturn(Optional.of(requester));
+        when(userAccess.getByIdWithLockOrThrow(requesterId))
+                .thenReturn(requester);
         when(userRepository.existsById(targetId))
                 .thenReturn(true);
 
@@ -110,8 +114,8 @@ public class BlackListServiceImplTest {
         requester.setId(requesterId);
         requester.setUserBlackList(new HashSet<>());
 
-        when(userRepository.findUserWithLock(requesterId))
-                .thenReturn(Optional.of(requester));
+        when(userAccess.getByIdWithLockOrThrow(requesterId))
+                .thenReturn(requester);
         when(userRepository.existsById(targetId))
                 .thenReturn(true);
 
@@ -139,8 +143,8 @@ public class BlackListServiceImplTest {
                 .avatarUrl("")
                 .isOnline(true)
                 .build();
-        when(userRepository.findById(userId))
-                .thenReturn(Optional.of(user));
+        when(userAccess.getByIdOrThrow(userId))
+                .thenReturn(user);
 
         Page<User> page = new PageImpl<>(
                 List.of(blackListedUser),
@@ -175,8 +179,8 @@ public class BlackListServiceImplTest {
         blackListedUser.setId(2L);
         blackListedUser.setUsername("user2");
 
-        when(userRepository.findById(userId))
-                .thenReturn(Optional.of(user));
+        when(userAccess.getByIdOrThrow(userId))
+                .thenReturn(user);
 
         Page<LiteUserDto> result = blackListService.getBlackList(userId, 0, 10);
 

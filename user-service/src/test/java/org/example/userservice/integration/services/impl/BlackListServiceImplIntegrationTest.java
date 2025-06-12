@@ -4,6 +4,7 @@ package org.example.userservice.integration.services.impl;
 import org.example.userservice.model.dto.LiteUserDto;
 import org.example.userservice.repo.UserRepository;
 import org.example.userservice.services.BlackListService;
+import org.example.userservice.services.impl.UserAccessService;
 import org.example.userservice.utiles.RedisForStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,6 +45,9 @@ class BlackListServiceImplIntegrationTest {
 
     @Autowired
     private BlackListService blackListService;
+
+//    @Autowired
+//    private UserAccessService userAccess;
 
     @Autowired
     private UserRepository userRepository;
