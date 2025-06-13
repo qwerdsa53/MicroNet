@@ -2,11 +2,11 @@ package org.example.userservice.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.example.userservice.exceptions.UserNotFoundException;
+import org.example.userservice.mapper.UserMapper;
 import org.example.userservice.model.dto.LiteUserDto;
 import org.example.userservice.repo.UserRepository;
 import org.example.userservice.services.BlackListService;
 import org.example.userservice.services.FriendService;
-import org.example.userservice.utiles.Mapper;
 import org.example.userservice.utiles.RedisForStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -25,7 +25,7 @@ public class BlackListServiceImpl implements BlackListService {
     private final FriendService friendService;
     private final RedisForStatus redis;
     private final UserAccessService userAccess;
-    private final Mapper mapper;
+    private final UserMapper userMapper;
 
     @Override
     @Transactional
@@ -74,7 +74,7 @@ public class BlackListServiceImpl implements BlackListService {
         return userRepository.findBlackListedUsers(blackListedIds, pageable)
                 .map(blackListedUser -> {
                     boolean isOnline = redis.isOnline("user:online:" + blackListedUser.getId()).orElse(false);
-                    return mapper.convertToLiteDto(blackListedUser, isOnline);
+                    return userMapper.convertToLiteDto(blackListedUser, isOnline);
                 });
     }
 }

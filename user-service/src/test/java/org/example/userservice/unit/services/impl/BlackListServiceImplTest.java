@@ -1,5 +1,6 @@
 package org.example.userservice.unit.services.impl;
 
+import org.example.userservice.mapper.UserMapper;
 import org.example.userservice.model.dto.LiteUserDto;
 import org.example.userservice.repo.UserRepository;
 import org.example.userservice.services.impl.BlackListServiceImpl;
@@ -30,7 +31,7 @@ public class BlackListServiceImplTest {
     private UserRepository userRepository;
 
     @Mock
-    private Mapper mapper;
+    private UserMapper mapper;
 
     @Mock
     private RedisForStatus redis;

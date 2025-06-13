@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.example.userservice.exceptions.FriendNotFoundException;
-import org.example.userservice.exceptions.UserNotFoundException;
 import org.example.userservice.model.dto.LiteUserDto;
 import org.example.userservice.repo.UserRepository;
 import org.example.userservice.services.FriendService;
@@ -94,7 +93,7 @@ public class FriendServiceImpl implements FriendService {
     @Override
     @Transactional
     public void rejectFriendRequest(Long currentUserId, Long fromUserId) {
-        User user = getUserWithLockOrThrow(currentUserId);
+        User user = userAccess.getByIdWithLockOrThrow(currentUserId);
         user.getFriendRequests().remove(fromUserId);
     }
 
@@ -161,20 +160,6 @@ public class FriendServiceImpl implements FriendService {
         requester.getFriends().add(target.getId());
     }
 
-    private User getUserOrThrow(Long id) {
-        return userRepository.findById(id).orElseThrow(() ->
-                new UserNotFoundException(
-                        String.format("User with id = %d not found", id)
-                ));
-    }
-
-    private User getUserWithLockOrThrow(Long id) {
-        return userRepository.findUserWithLock(id).orElseThrow(() ->
-                new UserNotFoundException(
-                        String.format("User with id = %d not found", id)
-                ));
-    }
-
     private void ensureNotFriends(User user, Long otherId) {
         if (user.getFriends().contains(otherId)) {
             throw new IllegalStateException("User is already a friend");
@@ -199,5 +184,4 @@ public class FriendServiceImpl implements FriendService {
             throw new IllegalStateException("Friend request already sent");
         }
     }
-
 }

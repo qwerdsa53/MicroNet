@@ -13,9 +13,7 @@ import qwerdsa53.shared.model.type.Role;
 
 import java.security.Key;
 import java.util.Date;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -43,30 +41,6 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public String getUsernameFromToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(jwtSecret).build().parseClaimsJws(token).getBody().getSubject();
-    }
-
-    private String extractToken(String authorizationHeader) {
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            return authorizationHeader.substring(7);
-        } else {
-            throw new IllegalArgumentException("Invalid Authorization header");
-        }
-    }
-
-    public Long getUserIdFromToken(String token) {
-        if (token.startsWith("Bearer ")) {
-            token = extractToken(token);
-        }
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(jwtSecret)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-        return claims.get("userId", Long.class);
-    }
-
     public Date getExpirationFromToken(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(jwtSecret)
@@ -82,30 +56,4 @@ public class JwtTokenProvider {
         return expiration.getTime() - currentTimeMillis;
     }
 
-    public List<String> getRolesFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(jwtSecret)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-
-        Object roles = claims.get("roles");
-        if (roles instanceof List<?>) {
-            return ((List<?>) roles).stream()
-                    .filter(role -> role instanceof String)
-                    .map(String.class::cast)
-                    .collect(Collectors.toList());
-        }
-        throw new IllegalArgumentException("Invalid roles format in token");
-    }
-
-    public boolean validateToken(String token) {
-        try {
-            Jwts.parserBuilder().setSigningKey(jwtSecret).build().parseClaimsJws(token);
-            return true;
-        } catch (Exception e) {
-            log.error("Invalid JWT Token: {}", e.getMessage());
-            return false;
-        }
-    }
 }

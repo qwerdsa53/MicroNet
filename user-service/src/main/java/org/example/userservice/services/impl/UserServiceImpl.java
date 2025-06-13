@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.userservice.JwtTokenProvider;
 import org.example.userservice.exceptions.UserAlreadyExistException;
 import org.example.userservice.exceptions.UserNotFoundException;
+import org.example.userservice.mapper.UserMapper;
 import org.example.userservice.model.dto.FilesUrlDto;
 import org.example.userservice.model.dto.JwtResponse;
 import org.example.userservice.model.dto.LiteUserDto;
@@ -12,7 +13,6 @@ import org.example.userservice.model.dto.UserDto;
 import org.example.userservice.repo.ImageRepo;
 import org.example.userservice.repo.UserRepository;
 import org.example.userservice.services.UserService;
-import org.example.userservice.utiles.Mapper;
 import org.example.userservice.utiles.RedisForStatus;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.scheduling.annotation.Async;
@@ -41,7 +41,7 @@ public class UserServiceImpl implements UserService {
     private final RedisForStatus redis;
     private final UserAccessService userAccess;
     private final ImageRepo imageRepo;
-    private final Mapper mapper;
+    private final UserMapper userMapper;
 
     @Async("asyncExecutor")
     @Transactional
@@ -99,7 +99,7 @@ public class UserServiceImpl implements UserService {
             user.setProfilePictures(null);
             isOnline = null;
         }
-        return mapper.convertToDto(user, isOnline);
+        return userMapper.convertToDto(user, isOnline);
     }
 
     @Override
@@ -108,7 +108,7 @@ public class UserServiceImpl implements UserService {
         Boolean isOnline = redis
                 .isOnline("user:online:" + id)
                 .orElse(false);
-        return mapper.convertToLiteDto(user, isOnline);
+        return userMapper.convertToLiteDto(user, isOnline);
     }
 
 
@@ -148,7 +148,7 @@ public class UserServiceImpl implements UserService {
         userRepository.save(existingUser);
 
         boolean isOnline = redis.isOnline("user:online:" + existingUser.getId()).orElse(false);
-        return mapper.convertToDto(existingUser, isOnline);
+        return userMapper.convertToDto(existingUser, isOnline);
     }
 
     public void updatePassword(Long userId, String newPassword) {

@@ -3,6 +3,7 @@ package org.example.userservice.unit.services.impl;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.example.userservice.JwtTokenProvider;
 import org.example.userservice.exceptions.UserAlreadyExistException;
+import org.example.userservice.mapper.UserMapper;
 import org.example.userservice.model.dto.FilesUrlDto;
 import org.example.userservice.model.dto.JwtResponse;
 import org.example.userservice.model.dto.UserDto;
@@ -56,7 +57,7 @@ public class UserServiceImplTest {
     private ImageRepo imageRepo;
 
     @Mock
-    private Mapper mapper;
+    private UserMapper mapper;
 
     @Mock
     private UserAccessService userAccess;
