@@ -2,5 +2,5 @@ jdk:
   - openjdk17
 
 install:
-  - cd shared
+  - cd hollowApiGenerator
   - mvn install -DskipTests

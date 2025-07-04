@@ -23,6 +23,7 @@
     </developers>
     <modules>
         <module>shared</module>
+        <module>hollowApiGenerator</module>
     </modules>
     <scm>
         <connection/>
